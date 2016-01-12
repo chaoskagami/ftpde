@@ -68,6 +68,7 @@ main(int  argc,
   hidInit(NULL);
   gfxInitDefault();
   gfxSet3D(false);
+  sdmcWriteSafe(false);
 #endif
 
   /* initialize console subsystem */
