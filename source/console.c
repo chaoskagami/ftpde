@@ -4,10 +4,12 @@
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
-
 #ifdef _3DS
 #include <3ds.h>
+#endif
+#include "debug.h"
+
+#ifdef _3DS
 
 static PrintConsole status_console;
 static PrintConsole main_console;
@@ -126,17 +128,8 @@ print_tcp_table(void)
 }
 
 /*! draw console to screen */
-void
-console_render(void)
-{
-  /* print tcp table */
-  print_tcp_table();
+/*! graphics rendering has moved to main.c*/
 
-  /* flush framebuffer */
-  gfxFlushBuffers();
-  gspWaitForVBlank();
-  gfxSwapBuffers();
-}
 #else
 
 /* this is a lot easier when you have a real console */
