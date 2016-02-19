@@ -26,15 +26,15 @@ include $(DEVKITARM)/3ds_rules
 #     - icon.png
 #     - <libctru folder>/default_icon.png
 #---------------------------------------------------------------------------------
-TARGET   := FTP-GMX-$(VERSION)
+TARGET   := ftpde-$(VERSION)
 BUILD    := build
 SOURCES  := source
 DATA     := gfx
 INCLUDES := include
 
-APP_TITLE       := FTP-GMX v$(VERSION)
-APP_DESCRIPTION := Fork: Super ftpd II Turbo v$(VERSION)
-APP_AUTHOR      := mtheall/Vorpal Blade
+APP_TITLE       := ftpde $(VERSION)
+APP_DESCRIPTION := ftpd + ftp-gmx + hax $(VERSION)
+APP_AUTHOR      := mtheall/Vorpal Blade/chaoskagami
 ICON            := app_icon.png
 
 #---------------------------------------------------------------------------------
@@ -44,7 +44,7 @@ ARCH     := -march=armv6k -mtune=mpcore -mfloat-abi=hard
 
 CFLAGS   := -g -Wall -O3 -mword-relocations \
             $(ARCH) \
-            -DSTATUS_STRING="\"FTP-GMX v$(VERSION)\""
+            -DSTATUS_STRING="\"ftpde $(VERSION)\""
 
 CFLAGS   +=  $(INCLUDE) -DARM11 -D_3DS
 
@@ -131,7 +131,7 @@ all: $(BUILD)
 
 $(BUILD):
 	@[ -d $@ ] || mkdir -p $@
-	@make --no-print-directory -C $(BUILD) -f $(CURDIR)/Makefile.3ds
+	@make --no-print-directory -C $(BUILD) -f $(CURDIR)/3ds.mk
 
 #---------------------------------------------------------------------------------
 clean:
@@ -161,14 +161,14 @@ $(OUTPUT).elf:  $(OFILES)
 $(OUTPUT).cia    :     $(OUTPUT).elf
 	@cp $(OUTPUT).elf $(TARGET)_stripped.elf
 	@$(PREFIX)strip $(TARGET)_stripped.elf
-	$(TOPDIR)/extra/bannertool.exe makebanner -i $(TOPDIR)/gfx/app_banner.png -a $(TOPDIR)/extra/default.wav -o ban.bnr
-	$(TOPDIR)/extra/bannertool.exe makesmdh -s "FTP" -l "FTP-GMX" -p "Vorpal Blade" -i $(TOPDIR)/gfx/app_icon.png -o ico.icn
-	$(TOPDIR)/extra/makerom -f cia -o $(OUTPUT).cia -DAPP_ENCRYPTED=false -rsf $(TOPDIR)/extra/info.rsf -target t -exefslogo -elf $(TARGET)_stripped.elf -icon $(TOPDIR)/build/ico.icn -banner $(TOPDIR)/build/ban.bnr
+	bannertool makebanner -i $(TOPDIR)/gfx/app_banner.png -a $(TOPDIR)/extra/default.wav -o ban.bnr
+	bannertool makesmdh -s "FTP" -l "ftpde" -p "chaoskagami" -i $(TOPDIR)/gfx/app_icon.png -o ico.icn
+	makerom -f cia -o $(OUTPUT).cia -DAPP_ENCRYPTED=false -rsf $(TOPDIR)/extra/info.rsf -target t -exefslogo -elf $(TARGET)_stripped.elf -icon $(TOPDIR)/build/ico.icn -banner $(TOPDIR)/build/ban.bnr
 
 $(OUTPUT).3ds    :     $(OUTPUT).elf
 	@cp $(OUTPUT).elf $(TARGET)_stripped.elf
 	@$(PREFIX)strip $(TARGET)_stripped.elf
-	$(TOPDIR)/extra/makerom -f cci -o $(OUTPUT).3ds -DAPP_ENCRYPTED=true -rsf $(TOPDIR)/extra/info.rsf -target t -exefslogo -elf $(TARGET)_stripped.elf -icon $(TOPDIR)/build/ico.icn -banner $(TOPDIR)/build/ban.bnr
+	makerom -f cci -o $(OUTPUT).3ds -DAPP_ENCRYPTED=true -rsf $(TOPDIR)/extra/info.rsf -target t -exefslogo -elf $(TARGET)_stripped.elf -icon $(TOPDIR)/build/ico.icn -banner $(TOPDIR)/build/ban.bnr
 
 #---------------------------------------------------------------------------------
 # you need a rule like this for each extension you use as binary data

@@ -1,13 +1,15 @@
 .PHONY: all clean linux
 
-export VERSION := 2.2
+export VERSION := 2.3
 
-all:
-	@$(MAKE) -f Makefile.3ds
+all: linux 3ds
+
+3ds:
+	@$(MAKE) -f 3ds.mk
 
 linux:
-	@$(MAKE) -f Makefile.linux
+	@$(MAKE) -f linux.mk
 
 clean:
-	@$(MAKE) -f Makefile.3ds   clean
-	@$(MAKE) -f Makefile.linux clean
+	@$(MAKE) -f 3ds.mk   clean
+	@$(MAKE) -f linux.mk clean
