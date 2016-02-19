@@ -119,7 +119,7 @@ struct ftp_session_t
   int                cmd_fd;    /*!< socket for command connection */
   int                pasv_fd;   /*!< listen socket for PASV */
   int                data_fd;   /*!< socket for data transfer */
-  time_t             timestamp; /*!< time from last command */
+  time_t			 timestamp; /*!< time from last command */
   session_flags_t    flags;     /*!< session flags */
   session_state_t    state;     /*!< session state */
   ftp_session_t      *next;     /*!< link to next session */
@@ -1864,7 +1864,7 @@ list_transfer(ftp_session_t *session)
         st.st_mode = S_IFREG;
 
       st.st_size = dir->entry_data.fileSize;
-
+      
       if((rc = build_path(session, session->lwd, dent->d_name)) != 0)
         console_print(RED "build_path: %d %s\n" RESET, errno, strerror(errno));
       else if((rc = sdmc_getmtime(session->buffer, &mtime)) != 0)
@@ -1886,7 +1886,7 @@ list_transfer(ftp_session_t *session)
         ftp_send_response(session, 550, "unavailable\r\n");
         return LOOP_EXIT;
       }
-
+      
       mtime = st.st_mtime;
 #endif
       /* encode \n in path */
@@ -1897,7 +1897,7 @@ list_transfer(ftp_session_t *session)
         /* copy to the session buffer to send */
         session->buffersize =
             sprintf(session->buffer,
-                    "%crwxrwxrwx 1 3DS 3DS %lld ",
+                    "%crwxrwxrwx 1 3DS 3DS %llu ",
                     S_ISREG(st.st_mode)  ? '-' :
                     S_ISDIR(st.st_mode)  ? 'd' :
                     S_ISLNK(st.st_mode)  ? 'l' :
@@ -1905,8 +1905,7 @@ list_transfer(ftp_session_t *session)
                     S_ISBLK(st.st_mode)  ? 'b' :
                     S_ISFIFO(st.st_mode) ? 'p' :
                     S_ISSOCK(st.st_mode) ? 's' : '?',
-                    (signed long long)st.st_size);
-
+                    (unsigned long long)st.st_size);
         t_mtime = mtime;
         tm = gmtime(&t_mtime);
         if(tm != NULL)
@@ -2549,7 +2548,7 @@ FTP_DECLARE(FEAT)
 
   ftp_session_set_state(session, COMMAND_STATE, 0);
 
-  /* list our features */
+    /* list our features */
   return ftp_send_response(session, -211, "\r\n"
                                           " MDTM\r\n"
                                           " UTF8\r\n"
