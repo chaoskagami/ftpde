@@ -1,81 +1,60 @@
-FTP - Graphic ModifierX Edition
+ftpde
 =======
 
-ftpd is originally created by mtheall. This fork is soley for aesthetic modifications and CFW/Flashcart builds.
+ftpd is originally created by mtheall, and forked as FTP-GMX by another user to add graphical mods and cia builds.
+
+This is upstream with FTP-GMX's changes merged in, plus:
+
+ * Linux option handling from terminals
+ * Extra commands not yet in ftpd and FTP-GMX
+ * Proper security (soon)
 
 Custom Graphics
 ---------------
-Modify the .png files in the `gfx`folder to add your own graphics.
+Modify the .png files in the `gfx`folder to add your own graphics. These have no effect when building for linux, since it's purely a console tool on linux.
 
 **app_banner:** 
-this image will appear on the top screen before you run the application (.3ds and .cia)
+This image will appear on the top screen before you run the application (.3ds and .cia)
 
 **app_bottom:** 
-this is the static in-app image on the bottom screen
+This is the static in-app image on the bottom screen
 
 **app_icon:** 
-this is the icon for the .cia, .3ds, and .3dsx
+This is the icon for the .cia, .3ds, and .3dsx
 
 Features
 --------
-- Appears to work well with a variety of clients.
-- Also compiles for Linux.
+- Appears to work well with a variety of clients, including wget, curl, and gftp.
+- Also compiles for Linux, with additional extensions to allow use in a more serious and secure manner as an actual ftp server for desktop.
 - Supports multiple simultaneous clients. The 3DS itself only appears to support enough sockets to perform 4-5 simultaneous data transfers, so it will help if you limit your FTP client to this many parallel requests.
-- *Your own* cutting-edge graphics.
+- *Your own* cutting-edge graphics on 3DS. Defaults are non-flashy, but hey, you can get fancy.
 
 Before building
 ---------------
-**Update: 1-27-16**
 
-1) install and set up [devkitARM and libctru](http://3dbrew.org/wiki/Setting_up_Development_Environment)
+1) Install and set up devkitARM. I recommend being a crazy bastard and building devkitARM yourself, but then again, I run LFS.
 
-2) install the latest [ctrulib](https://github.com/smealum/ctrulib/tree/master/libctru)
-*Note: devKitPro updater may not have the necessary files*
+2) Install the latest [ctrulib](https://github.com/smealum/ctrulib/tree/master/libctru). No, devkitPro's will not suffice. You need the development version. Any reports filed with non-dev versions will be completely ignored.
 
-3) install [sf2dlib](https://github.com/xerpi/sf2dlib)
+3) Install [sf2dlib](https://github.com/xerpi/sf2dlib)
 
-4) install [sfillib](https://github.com/xerpi/sfillib)
+4) Install portlibs, preferrably from the 'portlibs' subdir of this repo. dkpro's contain known security issues - you want your 3ds to run YOUR code, not be part of a bitcoin mining botnet, right?
 
-5) install [portlibs](https://github.com/devkitPro/3ds_portlibs)
+5) Install [sfillib](https://github.com/xerpi/sfillib)
 
-**pre-compiled portlibs:** [download here](http://s000.tinyupload.com/index.php?file_id=00483951764104679443) *and put the* `portlibs` *folder in your* `devKitPro` *folder*
+6) Precompiled portlibs? No. Go home, you're drunk.
 
 How to build
 ------------
-1) Download the .zip for this repo
+1) Learn to build other things. No help will be provided if you can't operate a devkit.
 
-2) extract
+2) Run 'make' or 'gmake'.
 
-3) while holding *left shift* on your keyboard, right click FTP-GMX-master and hit `Open command window here`
+This will produce the following files:
 
-4) run the following command
-
-    make
-    
-5) You will have new files created in the folder
-
-**Homebrew:**
-Copy the `FTP-GMX-2.2.3dsx` and `FTP-GMX-2.2.smdh` to a folder named `FTP-GMX-2.2`. Copy this folder to the `3ds` folder on your SD card and launch it via homebrew.
-
-**CFW:**
-Copy `FTP-GMX-2.2.cia` to your SD card and install it with a CIA installer.
-
-**Flashcarts:**
-Copy `FTP-GMX-2.2.3ds` to your SD card.
-
-Troubleshooting
----------------
-
-    error: 'NI_MAXHOST'
-    error: 'NI_MAXSERV'
-    error: 'sdmc_dir_t'
-You do not have an updated ctrulib
-
-    ../arm-none-eabi/bin/ld.exe: cannot find -lsfil
-    ...
-    collect2.exe: error: ld returned 1 exit status
-    
-You do not have portlibs installed
+ * ftpde-VER.3dsx - 3dsx relocatable for hbmenu-style loaders.
+ * ftpde-VER.smdh - Fancy graphics for hbmenu.
+ * ftpde-VER.cia  - Installable CTR file. Zero-keyed/No crypto.
 
 Supported Commands
 ------------------
@@ -105,6 +84,7 @@ Supported Commands
 - RMD
 - RNFR
 - RNTO
+- SIZE (new!)
 - STAT
 - STOR
 - STRU (no-op)
