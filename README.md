@@ -5,9 +5,12 @@ ftpd is originally created by mtheall, and forked as FTP-GMX by another user to 
 
 This is upstream with FTP-GMX's changes merged in, plus:
 
- * Linux option handling from terminals
- * Extra commands not yet in ftpd and FTP-GMX
- * Proper security (soon)
+ * Option handling from terminals. Run `ftpde -h` for more info.
+ * Extra commands not yet in ftpd and FTP-GMX.
+ * Better root handling on linux - now it doesn't serve `/`.
+ * Better security.
+
+In terms of methodology, I find a few bits unacceptable. These will be fixed.
 
 Custom Graphics
 ---------------
@@ -56,11 +59,10 @@ This will produce the following files:
  * ftpde-VER.smdh - Fancy graphics for hbmenu.
  * ftpde-VER.cia  - Installable CTR file. Zero-keyed/No crypto.
 
-Supported Commands
-------------------
+Implemented commands
+--------------------
 
 - ABOR
-- ALLO (no-op)
 - APPE
 - CDUP
 - CWD
@@ -70,11 +72,9 @@ Supported Commands
 - LIST
 - MDTM
 - MKD
-- MODE (no-op)
 - NLST
 - NOOP
 - OPTS
-- PASS (no-op)
 - PASV
 - PORT
 - PWD
@@ -84,20 +84,37 @@ Supported Commands
 - RMD
 - RNFR
 - RNTO
-- SIZE (new!)
 - STAT
 - STOR
-- STRU (no-op)
 - SYST
-- TYPE (no-op)
-- USER (no-op)
 - XCUP
 - XCWD
 - XMKD
 - XPWD
 - XRMD
 
-Planned Commands (ftpd)
------------------------
+New commands in ftpde
+---------------------
+
+- SIZE (RFC 3659)
+
+Stubbed Commands that need proper functionality
+-----------------------------------------------
+
+- ALLO - fallocate please
+- MODE - Only stream is supported. Compressed and block would be nice. 
+- PASS - Unacceptable to be stubbed, need access control.
+- STRU - 
+- TYPE - ASCII mode is needed. Thankfully binary is the one implemented.
+- USER - See PASS.
+
+NYI, but should be implemented
+------------------------------
 
 - STOU
+- HOST
+- LANG
+- LPRT
+- MDTM - Last modified time in format "YYYYMMDDhhmmss"
+- MLSD
+- NOOP
