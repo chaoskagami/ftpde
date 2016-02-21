@@ -1729,23 +1729,15 @@ static loop_status_t list_transfer(ftp_session_t *session) {
             if (buffer != NULL) {
                 /* copy to the session buffer to send */
                 session->buffersize = sprintf(
-                    session->buffer, "%crwxrwxrwx 1 3DS 3DS %llu ",
-                    S_ISREG(st.st_mode)
-                        ? '-'
-                        : S_ISDIR(st.st_mode)
-                              ? 'd'
-                              : S_ISLNK(st.st_mode)
-                                    ? 'l'
-                                    : S_ISCHR(st.st_mode)
-                                          ? 'c'
-                                          : S_ISBLK(st.st_mode)
-                                                ? 'b'
-                                                : S_ISFIFO(st.st_mode)
-                                                      ? 'p'
-                                                      : S_ISSOCK(st.st_mode)
-                                                            ? 's'
-                                                            : '?',
-                    (unsigned long long)st.st_size);
+                    session->buffer, "%crwxrwxrwx 1 ftp ftp %lld ",
+                    S_ISREG(st.st_mode) ? '-'
+                        S_ISDIR(st.st_mode) ? 'd'
+                        S_ISLNK(st.st_mode) ? 'l' :
+                        S_ISCHR(st.st_mode) ? 'c' :
+                        S_ISBLK(st.st_mode) ? 'b' :
+                        S_ISFIFO(st.st_mode) ? 'p' :
+                        S_ISSOCK(st.st_mode) ? 's' : '?',
+                    (signed long long)st.st_size);
                 t_mtime = mtime;
                 tm = gmtime(&t_mtime);
                 if (tm != NULL) {
@@ -1757,8 +1749,8 @@ static loop_status_t list_transfer(ftp_session_t *session) {
                         session->buffer + session->buffersize,
                         sizeof(session->buffer) - session->buffersize, fmt, tm);
                 } else {
-                    session->buffersize += sprintf(
-                        session->buffer + session->buffersize, "Jan 1 1970 ");
+                    session->buffersize += sprintf(session->buffer + session->buffersize,
+                                                   "Jan 1 1970 "); // AKA Unix time 0.
                 }
 
                 if (session->buffersize + len + 2 > sizeof(session->buffer)) {
