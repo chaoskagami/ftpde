@@ -16,10 +16,11 @@ FTP_DECLARE(USER) {
 
     ftp_session_set_state(session, COMMAND_STATE, 0);
 
-    if (!strcmp(session->username_buf, "anonymous")) {
+    // TODO - Allow disabling the anonymous user.
+    if (!strcmp(session->username_buf, "anonymous") || !strcmp(session->username_buf, "")) {
         // Anon is a special user that accepts any password should have only
-        // read permissions.
-        session->auth_level = AUTH_READ|AUTH_WRITE; // Remove AUTH_WRITE once configs are implmented in PASS.
+        // read permissions. Blank is the same thing as anonymous.
+        session->auth_level = AUTH_READ; // Remove AUTH_WRITE once configs are implmented in PASS.
 
         return ftp_send_response(session, 230, "OK\r\n");
     }
