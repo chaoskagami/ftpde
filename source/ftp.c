@@ -1548,9 +1548,10 @@ static void cd_up(ftp_session_t *session) {
         if (*p == '/')
             slash = p;
     }
+
     *slash = 0;
-    if (strlen(session->cwd) == 0)
-        strcat(session->cwd, session->root_dir);
+    if (strncmp(session->cwd, session->root_dir, strlen(session->root_dir)))
+        strcpy(session->cwd, session->root_dir);
 }
 
 /*! validate a path
@@ -1625,7 +1626,7 @@ static int build_path(ftp_session_t *session, const char *cwd,
         *p = 0;
 
     /* if we ended with an empty path, it is the root directory */
-    if (strlen(session->buffer) == 0)
+    if (strncmp(session->buffer, session->root_dir, strlen(session->root_dir)))
         strcpy(session->buffer, session->root_dir);
 
     return 0;
