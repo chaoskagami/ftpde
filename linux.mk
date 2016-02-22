@@ -14,10 +14,10 @@ build.linux:
 	@mkdir build.linux/
 
 $(OUTPUT): $(OFILES)
-	@$(CC) -o $@ $^ $(LDFLAGS)
+	$(CC) -o $@ $^ $(LDFLAGS)
 
 $(OFILES): build.linux/%.o : source/%.c
-	@$(CC) -o $@ -c $< $(CFLAGS)
+	$(CC) -o $@ -c $< $(CFLAGS)
 
 clean:
-	@$(RM) -r build.linux/ $(OUTPUT)
+	$(RM) -r build.linux/ $(OUTPUT)

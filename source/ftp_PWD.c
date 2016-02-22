@@ -33,7 +33,6 @@ FTP_DECLARE(PWD) {
             return ftp_send_response(session, 425, "%s\r\n",
                                      strerror(EOVERFLOW));
         }
-        // We don't tell the user where we are in the directory tree.
         memcpy(buffer + i, path, len);
         free(path);
         len += i;
@@ -41,7 +40,7 @@ FTP_DECLARE(PWD) {
         buffer[len++] = '\r';
         buffer[len++] = '\n';
 
-        return ftp_send_response_buffer(session, buffer, len);
+        return ftp_send_response_buffer(session, buffer, len, 1);
     }
     return ftp_send_response(session, 425, "%s\r\n", strerror(ENOMEM));
 }

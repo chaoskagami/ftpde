@@ -18,10 +18,7 @@ FTP_DECLARE(RNFR) {
 
     ftp_session_set_state(session, COMMAND_STATE, 0);
 
-    if ((session->auth_level & AUTH_WRITE) != AUTH_WRITE) {
-        // Invalid. Lacking proper auth.
-        return ftp_send_response(session, 530, "Not permitted.\r\n");
-    }
+    REJECT_WRITE_CHK;
 
     /* build the path to rename from */
     if (build_path(session, session->cwd, args) != 0)

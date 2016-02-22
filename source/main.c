@@ -103,13 +103,13 @@ int main(int argc, char *argv[]) {
     console_set_status("\n" GREEN STATUS_STRING RESET);
 #endif
 
-    int port_n = 21;
-    char* root_dir = NULL;
+    int port_n = 21; // Port number.
+    char* root_dir = NULL; // Directory to jail to.
+	int ro = 0; // Read-only. No sends are allowed.
 
 #ifndef _3DS
     // On a linux system. Extract argv and argc if there.
     int c;
-	int ro = 0; // Read-only. No sends are allowed.
     while ( (c = getopt(argc, argv, "p:R:rh")) != -1) {
         switch(c) {
             case 'p':
@@ -137,9 +137,13 @@ int main(int argc, char *argv[]) {
     }
 #endif
 
+    if (ro == 1) {
+        printf(RED "Running in read-only mode.\n" RESET);
+    }
+
     while (status == LOOP_RESTART) {
         /* initialize ftp subsystem */
-        if (ftp_init(port_n, root_dir) == 0) {
+        if (ftp_init(port_n, root_dir, ro) == 0) {
             /* ftp loop */
             status = loop(ftp_loop);
 
@@ -149,7 +153,10 @@ int main(int argc, char *argv[]) {
             status = LOOP_EXIT;
     }
 
+#ifdef _3DS
     console_print("Press B to exit\n");
+#endif
+
     loop(wait_for_b);
 
 #ifdef _3DS

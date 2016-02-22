@@ -218,6 +218,16 @@ struct ftp_session_t {
     auth_level_t auth_level; /*!< Auth */
 };
 
+#define REJECT_WRITE_CHK { \
+    int REJ_CHK = ftp_check_reject_write(session); \
+    if (REJ_CHK != 0) \
+        return REJ_CHK; \
+}
+
+#define CODE_TO_STATBOOL(x) ((x >= 400 && x < 600) ? (0) : (1))
+
+int ftp_check_reject_write(ftp_session_t* session);
+
 int ftp_command_cmp(const void *p1, const void *p2);
 
 in_port_t next_data_port(void);
@@ -256,7 +266,7 @@ char *encode_path(const char *path, size_t *len, bool quotes);
 
 void decode_path(ftp_session_t *session, size_t len);
 
-ssize_t ftp_send_response_buffer(ftp_session_t *session, const char *buffer, size_t len);
+ssize_t ftp_send_response_buffer(ftp_session_t *session, const char *buffer, size_t len, int success);
 
 __attribute__((format(printf, 3, 4)))
     ssize_t ftp_send_response(ftp_session_t *session, int code, const char *fmt, ...);
@@ -273,7 +283,7 @@ void ftp_session_read_command(ftp_session_t *session, int events);
 
 ftp_session_t *ftp_session_poll(ftp_session_t *session);
 
-int ftp_init(int port, char* root_d);
+int ftp_init(int port, char* root_d, int readonly);
 
 void ftp_exit(void);
 

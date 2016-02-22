@@ -130,13 +130,12 @@ endif
 all: $(BUILD)
 
 $(BUILD):
-	@[ -d $@ ] || mkdir -p $@
-	@make --no-print-directory -C $(BUILD) -f $(CURDIR)/3ds.mk
+	[ -d $@ ] || mkdir -p $@
+	make --no-print-directory -C $(BUILD) -f $(CURDIR)/3ds.mk
 
 #---------------------------------------------------------------------------------
 clean:
-	@echo clean ...
-	@rm -fr $(BUILD) $(TARGET).3dsx $(OUTPUT).smdh $(TARGET)_3ds.elf $(TARGET).cia $(TARGET).3ds
+	rm -fr $(BUILD) $(TARGET).3dsx $(OUTPUT).smdh $(TARGET)_3ds.elf $(TARGET).cia $(TARGET).3ds
 
 
 #---------------------------------------------------------------------------------
@@ -159,15 +158,15 @@ $(OUTPUT).3dsx: $(OUTPUT)_3ds.elf $(OUTPUT).cia $(OUTPUT).3ds ban.bnr ico.icn
 $(OUTPUT)_3ds.elf:  $(OFILES)
 
 $(OUTPUT).cia    :     $(OUTPUT)_3ds.elf
-	@cp $(OUTPUT)_3ds.elf $(TARGET)_stripped_3ds.elf
-	@$(PREFIX)strip $(TARGET)_stripped_3ds.elf
+	cp $(OUTPUT)_3ds.elf $(TARGET)_stripped_3ds.elf
+	$(PREFIX)strip $(TARGET)_stripped_3ds.elf
 	bannertool makebanner -i $(TOPDIR)/gfx/app_banner.png -a $(TOPDIR)/extra/default.wav -o ban.bnr
 	bannertool makesmdh -s "FTP" -l "ftpde" -p "chaoskagami" -i $(TOPDIR)/gfx/app_icon.png -o ico.icn
 	makerom -f cia -o $(OUTPUT).cia -DAPP_ENCRYPTED=false -rsf $(TOPDIR)/extra/info.rsf -target t -exefslogo -elf $(TARGET)_stripped_3ds.elf -icon $(TOPDIR)/build/ico.icn -banner $(TOPDIR)/build/ban.bnr
 
 $(OUTPUT).3ds    :     $(OUTPUT)_3ds.elf
-	@cp $(OUTPUT)_3ds.elf $(TARGET)_stripped_3ds.elf
-	@$(PREFIX)strip $(TARGET)_stripped_3ds.elf
+	cp $(OUTPUT)_3ds.elf $(TARGET)_stripped_3ds.elf
+	$(PREFIX)strip $(TARGET)_stripped_3ds.elf
 	makerom -f cci -o $(OUTPUT).3ds -DAPP_ENCRYPTED=true -rsf $(TOPDIR)/extra/info.rsf -target t -exefslogo -elf $(TARGET)_stripped_3ds.elf -icon $(TOPDIR)/build/ico.icn -banner $(TOPDIR)/build/ban.bnr
 
 #---------------------------------------------------------------------------------
