@@ -1,16 +1,22 @@
-.PHONY: all clean linux
+.PHONY: all clean posix
 
 export VERSION := 2.3
 
 all:
-	@echo "Run make with one of the following targets: linux, 3ds"
+	@echo "Run make with one of the following platforms: posix, 3ds"
 
 3ds:
 	@$(MAKE) -f 3ds.mk
 
-linux:
-	@$(MAKE) -f linux.mk
+fbi-install:
+	@$(MAKE) -f 3ds.mk install
+
+install:
+	@$(MAKE) -f posix.mk install
+
+posix:
+	@$(MAKE) -f posix.mk
 
 clean:
 	@$(MAKE) -f 3ds.mk   clean
-	@$(MAKE) -f linux.mk clean
+	@$(MAKE) -f posix.mk clean
