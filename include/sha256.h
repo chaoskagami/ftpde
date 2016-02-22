@@ -11,16 +11,10 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <stdint.h>
-#include <linux/random.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <errno.h>
 #include <dirent.h>
-
-
-#ifdef _WIN32
-#include <windows.h>
-#endif
 
 #define SZ_OK 0
 
@@ -114,7 +108,6 @@ typedef int Bool;
 #define MY_FAST_CALL
 
 #endif
-
 
 /* The following interfaces use first parameter as pointer to structure */
 
