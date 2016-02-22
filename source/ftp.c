@@ -36,7 +36,11 @@ int sock_buffersize = SOCK_BUFFERSIZE;
 /*! server start time */
 time_t start_time = 0;
 
+/*! root directory to jail to. */
 char* ftp_root_dir = NULL;
+
+/*! Whether to disallow writes. */
+int ftp_readonly_mode = 0;
 
 /*! ftp command list */
 ftp_command_t ftp_commands[] = {
@@ -58,6 +62,17 @@ ftp_command_t ftp_commands[] = {
 /*! number of ftp commands */
 const size_t num_ftp_commands =
     sizeof(ftp_commands) / sizeof(ftp_commands[0]);
+
+/*! check whether the session should reject a write command
+ *
+ */
+int ftp_check_reject_write(ftp_session_t* session) {
+    if ((session->auth_level & AUTH_WRITE) != AUTH_WRITE || ftp_readonly_mode == 1) {
+        // Invalid. Lacking proper auth.
+        return ftp_send_response(session, 530, "Not permitted.\r\n");
+    }
+    return 0;
+}
 
 /*! compare ftp command descriptors
  *
@@ -541,12 +556,15 @@ void decode_path(ftp_session_t *session, size_t len) {
  *  @returns bytes sent to peer
  */
 ssize_t ftp_send_response_buffer(ftp_session_t *session,
-                                        const char *buffer, size_t len) {
+                                        const char *buffer, size_t len, int succeed) {
     ssize_t rc, to_send;
 
     /* send response */
     to_send = len;
-    console_print(GREEN "%s" RESET, buffer);
+    if (succeed)
+        console_print(GREEN "%s" RESET, buffer);
+    else
+        console_print(RED "%s" RESET, buffer);
     rc = send(session->cmd_fd, buffer, to_send, 0);
     if (rc < 0)
         console_print(RED "send: %d %s\n" RESET, errno, strerror(errno));
@@ -591,7 +609,7 @@ ftp_send_response(ftp_session_t *session, int code, const char *fmt, ...) {
             rc = sprintf(buffer, "%d-\r\n", -code);
     }
 
-    return ftp_send_response_buffer(session, buffer, rc);
+    return ftp_send_response_buffer(session, buffer, rc, CODE_TO_STATBOOL(code));
 }
 
 /*! destroy ftp session
@@ -972,10 +990,10 @@ void ftp_session_read_command(ftp_session_t *session, int events) {
                 len = strlen(buffer);
                 buffer = encode_path(buffer, &len, false);
                 if (buffer != NULL)
-                    ftp_send_response_buffer(session, buffer, len);
+                    ftp_send_response_buffer(session, buffer, len, 1);
                 else
                     ftp_send_response_buffer(session, key.name,
-                                             strlen(key.name));
+                                             strlen(key.name), 1);
                 free(buffer);
 
                 /* send args (if any) */
@@ -983,14 +1001,14 @@ void ftp_session_read_command(ftp_session_t *session, int events) {
                     len = strlen(args);
                     buffer = encode_path(args, &len, false);
                     if (buffer != NULL)
-                        ftp_send_response_buffer(session, buffer, len);
+                        ftp_send_response_buffer(session, buffer, len, 1);
                     else
-                        ftp_send_response_buffer(session, args, strlen(args));
+                        ftp_send_response_buffer(session, args, strlen(args), 1);
                     free(buffer);
                 }
 
                 /* send footer */
-                ftp_send_response_buffer(session, "\"\r\n", 3);
+                ftp_send_response_buffer(session, "\"\r\n", 3, 1);
             } else if (session->state != COMMAND_STATE) {
                 /* only some commands are available during data transfer */
                 if (strcasecmp(command->name, "ABOR") != 0 &&
@@ -1133,10 +1151,13 @@ ftp_session_t *ftp_session_poll(ftp_session_t *session) {
 }
 
 /*! initialize ftp subsystem */
-int ftp_init(int port, char* root_d) {
+int ftp_init(int port, char* root_d, int readonly) {
     int rc;
 
     start_time = time(NULL);
+
+    if (readonly == 1)
+        ftp_readonly_mode = readonly;
 
 #ifdef _3DS
     Result ret = 0;
@@ -1779,7 +1800,8 @@ int ftp_xfer_file(ftp_session_t *session, const char *args,
     int rc;
 
     // Only RETR is allowed without write privs.
-    if ((session->auth_level & AUTH_WRITE) != AUTH_WRITE && mode != XFER_FILE_RETR) {
+    if (((session->auth_level & AUTH_WRITE) != AUTH_WRITE || ftp_readonly_mode == 1) &&
+        mode != XFER_FILE_RETR) {
         // Invalid. Lacking proper auth.
         ftp_session_set_state(session, COMMAND_STATE, CLOSE_PASV | CLOSE_DATA);
         return ftp_send_response(session, 530, "Not permitted.\r\n");
