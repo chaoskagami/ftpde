@@ -154,7 +154,8 @@ In progress
 Commands that have problems
 ---------------------------
 
-- LIST - Doesn't parse unix command syntax, like -aL. If the ls command is available, we shouldn't be enumerating ourselves.
+- LIST - Needs proper user support, or at very least to specify proper relative permissions. Can actually do `ls params FILE` on a PC. This is only relevant on PC.
+- SITE - Okay, this is maybe debatable, but SITE CHMOD 755 file is useful for linux.
 
 Stubbed Commands that need proper functionality
 -----------------------------------------------
@@ -176,4 +177,7 @@ NYI, but should be implemented
 Planned Features
 ----------------
 
-- IP whitelist support
+- IP whitelist support (high priority)
+- Runtime color disable (high priority)
+- Automatic reloading of changed config file at runtime (useful)
+- Rate limiting (possibly)
