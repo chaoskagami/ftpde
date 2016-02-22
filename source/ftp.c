@@ -1607,7 +1607,7 @@ static int build_path(ftp_session_t *session, const char *cwd,
         strncpy(session->buffer, args, sizeof(session->buffer));
     } else {
         /* this is a relative path */
-        if (strcmp(cwd, "/") == 0)
+        if (!strcmp(cwd, "/"))
             rc =
                 snprintf(session->buffer, sizeof(session->buffer), "/%s", args);
         else
@@ -1625,7 +1625,7 @@ static int build_path(ftp_session_t *session, const char *cwd,
     while (p > session->buffer && *--p == '/')
         *p = 0;
 
-    /* if we ended with an empty path, it is the root directory */
+    /* if we ended with a path not containing the root dir...jail it. */
     if (strncmp(session->buffer, session->root_dir, strlen(session->root_dir)))
         strcpy(session->buffer, session->root_dir);
 
@@ -1933,7 +1933,8 @@ static int ftp_xfer_file(ftp_session_t *session, const char *args,
                          xfer_file_mode_t mode) {
     int rc;
 
-    if ((session->auth_level & AUTH_WRITE) != AUTH_WRITE) {
+    // Only RETR is allowed without write privs.
+    if ((session->auth_level & AUTH_WRITE) != AUTH_WRITE && mode != XFER_FILE_RETR) {
         // Invalid. Lacking proper auth.
         ftp_session_set_state(session, COMMAND_STATE, CLOSE_PASV | CLOSE_DATA);
         return ftp_send_response(session, 530, "Not permitted.\r\n");
