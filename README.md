@@ -181,3 +181,4 @@ Planned Features
 - Runtime color disable (high priority)
 - Automatic reloading of changed config file at runtime (useful)
 - Rate limiting (possibly)
+- Load app_bottom at runtime rather than bin2o'd.
