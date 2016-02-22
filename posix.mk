@@ -3,10 +3,11 @@ OFILES  := $(patsubst source/%,build.posix/%,$(CFILES:.c=.o))
 
 CFLAGS  := -g -Wall -Iinclude -U_3DS -DSTATUS_STRING="\"ftpde $(VERSION)\""
 LDFLAGS :=
+LIBS    := -lconfig
 
 PREFIX   ?= /usr/local
-BINDIR   ?= /bin
-SBINDIR  ?= /bin
+BINDIR   ?= $(PREFIX)/bin
+SBINDIR  ?= $(PREFIX)/sbin
 
 INSTALL := install -m755 -v
 
@@ -20,7 +21,7 @@ build.posix:
 	@mkdir build.posix/
 
 $(OUTPUT): $(OFILES)
-	$(CC) -o $@ $^ $(LDFLAGS)
+	$(CC) -o $@ $^ $(LDFLAGS) $(LIBS)
 
 $(OFILES): build.posix/%.o : source/%.c
 	$(CC) -o $@ -c $< $(CFLAGS)
@@ -30,5 +31,5 @@ clean:
 
 install: $(OUTPUT)
 	$(INSTALL) -d $(PREFIX)
-	$(INSTALL) -d $(PREFIX)$(BINDIR)
-	$(INSTALL) $(OUTPUT) $(PREFIX)$(BINDIR)/$(OUTPUT)
+	$(INSTALL) -d $(BINDIR)
+	$(INSTALL) $(OUTPUT) $(BINDIR)/$(OUTPUT)

@@ -17,13 +17,15 @@
 #include "getopt.h"
 #endif
 
+#include "configread.h"
+
 /*! looping mechanism
  *
  *  @param[in] callback function to call during each iteration
  *
  *  @returns loop status
  */
-static loop_status_t loop(loop_status_t (*callback)(void)) {
+loop_status_t loop(loop_status_t (*callback)(void)) {
     loop_status_t status = LOOP_CONTINUE;
 
 #ifdef _3DS
@@ -58,7 +60,7 @@ static loop_status_t loop(loop_status_t (*callback)(void)) {
 #endif
 }
 
-/*! wait until the B button is pressed
+/*! wait until the B button is pressed (on 3DS)
  *
  *  @returns loop status
  */
@@ -103,17 +105,23 @@ int main(int argc, char *argv[]) {
     console_set_status("\n" GREEN STATUS_STRING RESET);
 #endif
 
-    int port_n = 21; // Port number.
+    // Load config.
+    int cfg = load_config_file();
+    if (cfg) {
+        // Error.
+        printf(RED "Default config file '%s' not found.\n" RESET, config_file);
+    }
+
     char* root_dir = NULL; // Directory to jail to.
 	int ro = 0; // Read-only. No sends are allowed.
 
 #ifndef _3DS
     // On a linux system. Extract argv and argc if there.
     int c;
-    while ( (c = getopt(argc, argv, "p:R:rh")) != -1) {
+    while ( (c = getopt(argc, argv, "p:R:rC:h")) != -1) {
         switch(c) {
             case 'p':
-                sscanf(optarg, "%d", &port_n);
+                sscanf(optarg, "%d", &sett_port);
                 break;
             case 'R':
                 root_dir = optarg;
@@ -121,6 +129,14 @@ int main(int argc, char *argv[]) {
 			case 'r':
 				ro = 1;
 				break;
+            case 'C':
+                config_file = optarg;
+                cfg = load_config_file();
+                if (cfg) {
+                    printf(RED "Specified config file '%s' not found.\n" RESET, optarg);
+                    goto exit_fail;
+                }
+                break;
 			case 'h':
 				printf(GREEN STATUS_STRING RESET "\n");
 				printf(WHITE "Options:\n" RESET);
@@ -143,7 +159,7 @@ int main(int argc, char *argv[]) {
 
     while (status == LOOP_RESTART) {
         /* initialize ftp subsystem */
-        if (ftp_init(port_n, root_dir, ro) == 0) {
+        if (ftp_init(sett_port, root_dir, ro) == 0) {
             /* ftp loop */
             status = loop(ftp_loop);
 
@@ -152,6 +168,8 @@ int main(int argc, char *argv[]) {
         } else
             status = LOOP_EXIT;
     }
+
+exit_fail:
 
 #ifdef _3DS
     console_print("Press B to exit\n");
