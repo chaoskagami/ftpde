@@ -3,6 +3,7 @@
  * from https://cr.yp.to/ftp/filesystem.html
  */
 #include "ftp.h"
+#include "sha256.h"
 #include <arpa/inet.h>
 #include <ctype.h>
 #include <dirent.h>
@@ -52,16 +53,16 @@ typedef struct ftp_session_t ftp_session_t;
 
 #define FTP_DECLARE(x) static int x(ftp_session_t *session, const char *args)
 FTP_DECLARE(ABOR);
-FTP_DECLARE(ALLO);
-FTP_DECLARE(APPE);
-FTP_DECLARE(CDUP);
-FTP_DECLARE(CWD);
-FTP_DECLARE(DELE);
+FTP_DECLARE(ALLO); // AUTH_WRITE
+FTP_DECLARE(APPE); // AUTH_WRITE
+FTP_DECLARE(CDUP); // Chained to root_path
+FTP_DECLARE(CWD);  // Chained to root_path
+FTP_DECLARE(DELE); // AUTH_WRITE
 FTP_DECLARE(FEAT);
 FTP_DECLARE(HELP);
 FTP_DECLARE(LIST);
 FTP_DECLARE(MDTM);
-FTP_DECLARE(MKD);
+FTP_DECLARE(MKD);  // AUTH_WRITE
 FTP_DECLARE(MODE);
 FTP_DECLARE(NLST);
 FTP_DECLARE(NOOP);
@@ -73,12 +74,12 @@ FTP_DECLARE(PWD);
 FTP_DECLARE(QUIT);
 FTP_DECLARE(REST);
 FTP_DECLARE(RETR);
-FTP_DECLARE(RMD);
-FTP_DECLARE(RNFR);
-FTP_DECLARE(RNTO);
+FTP_DECLARE(RMD);  // AUTH_WRITE
+FTP_DECLARE(RNFR); // AUTH_WRITE
+FTP_DECLARE(RNTO); // AUTH_WRITE
 FTP_DECLARE(STAT);
-FTP_DECLARE(STOR);
-FTP_DECLARE(STOU);
+FTP_DECLARE(STOR); // AUTH_WRITE
+FTP_DECLARE(STOU); // AUTH_WRITE
 FTP_DECLARE(STRU);
 FTP_DECLARE(SYST);
 FTP_DECLARE(TYPE);
@@ -113,10 +114,16 @@ typedef enum {
     SESSION_URGENT = BIT(7), /*!< in telnet urgent mode */
 } session_flags_t;
 
+typedef enum {
+    AUTH_REJECT = 0,      // All commands will be rejected.
+    AUTH_READ   = BIT(0), // Only reads will be allowed.
+    AUTH_WRITE  = BIT(1), // Uploads are allowed.
+} auth_level_t;
+
 /*! ftp session */
 struct ftp_session_t {
 	char root_dir[4096];          /*!< root directory to list */
-    char cwd[4096];               /*!< current working directory */
+    char cwd[4096];               /*!< current working directory, relative to root_dir */
     char lwd[4096];               /*!< list working directory */
     struct sockaddr_in peer_addr; /*!< peer address for data connection */
     struct sockaddr_in pasv_addr; /*!< listen address for PASV connection */
@@ -141,6 +148,11 @@ struct ftp_session_t {
     uint64_t filesize; /*! persistent file size between callbacks */
     FILE *fp;          /*! persistent open file pointer between callbacks */
     DIR *dp; /*! persistent open directory pointer between callbacks */
+
+    /*! added in ftpde */
+    char username_buf[64];   /*!< Username buffer. Any longer is overkill. */
+    char password_buf[64];   /*!< Password HASH buffer. Not the actual password. Sha256 is used. */
+    auth_level_t auth_level; /*!< Auth */
 };
 
 /*! ftp command descriptor */
@@ -804,7 +816,7 @@ static void ftp_session_new(int listen_fd) {
         return;
     }
 
-	// TODO - Add support for a 'root' directory other than /.
+	// Support for a 'root' directory other than /.
     if (ftp_root_dir != NULL)
         strcpy(session->root_dir, ftp_root_dir);
     else {
@@ -1730,8 +1742,8 @@ static loop_status_t list_transfer(ftp_session_t *session) {
                 /* copy to the session buffer to send */
                 session->buffersize = sprintf(
                     session->buffer, "%crwxrwxrwx 1 ftp ftp %lld ",
-                    S_ISREG(st.st_mode) ? '-'
-                        S_ISDIR(st.st_mode) ? 'd'
+                    S_ISREG(st.st_mode) ? '-' :
+                        S_ISDIR(st.st_mode) ? 'd' :
                         S_ISLNK(st.st_mode) ? 'l' :
                         S_ISCHR(st.st_mode) ? 'c' :
                         S_ISBLK(st.st_mode) ? 'b' :
@@ -1920,6 +1932,12 @@ static int ftp_xfer_file(ftp_session_t *session, const char *args,
                          xfer_file_mode_t mode) {
     int rc;
 
+    if ((session->auth_level & AUTH_WRITE) != AUTH_WRITE) {
+        // Invalid. Lacking proper auth.
+        ftp_session_set_state(session, COMMAND_STATE, CLOSE_PASV | CLOSE_DATA);
+        return ftp_send_response(session, 530, "Not permitted.\r\n");
+    }
+
     /* build the path of the file to transfer */
     if (build_path(session, session->cwd, args) != 0) {
         rc = errno;
@@ -2069,7 +2087,7 @@ static int ftp_xfer_dir(ftp_session_t *session, const char *args,
                     /* copy to the session buffer to send */
                     session->buffersize =
                         sprintf(session->buffer,
-                                "-rwxrwxrwx 1 3DS 3DS %lld Jan 1 1970 ",
+                                "-rwxrwxrwx 1 ftp ftp %lld Jan 1 1970 ",
                                 (signed long long)st.st_size);
                     if (session->buffersize + len + 2 >
                         sizeof(session->buffer)) {
@@ -2196,6 +2214,13 @@ FTP_DECLARE(ABOR) {
 FTP_DECLARE(ALLO) {
     console_print(CYAN "%s %s\n" RESET, __func__, args ? args : "");
 
+    if ((session->auth_level & AUTH_WRITE) != AUTH_WRITE) {
+        // Invalid. Lacking proper auth.
+        ftp_session_set_state(session, COMMAND_STATE, 0);
+
+        return ftp_send_response(session, 530, "Not permitted.\r\n");
+    }
+
     ftp_session_set_state(session, COMMAND_STATE, 0);
 
     return ftp_send_response(session, 202, "superfluous command\r\n");
@@ -2301,6 +2326,11 @@ FTP_DECLARE(DELE) {
     console_print(CYAN "%s %s\n" RESET, __func__, args ? args : "");
 
     ftp_session_set_state(session, COMMAND_STATE, 0);
+
+    if ((session->auth_level & AUTH_WRITE) != AUTH_WRITE) {
+        // Invalid. Lacking proper auth.
+        return ftp_send_response(session, 530, "Not permitted.\r\n");
+    }
 
     /* build the file path */
     if (build_path(session, session->cwd, args) != 0)
@@ -2449,6 +2479,11 @@ FTP_DECLARE(MKD) {
 
     ftp_session_set_state(session, COMMAND_STATE, 0);
 
+    if ((session->auth_level & AUTH_WRITE) != AUTH_WRITE) {
+        // Invalid. Lacking proper auth.
+        return ftp_send_response(session, 530, "Not permitted.\r\n");
+    }
+
     /* build the path */
     if (build_path(session, session->cwd, args) != 0)
         return ftp_send_response(session, 553, "%s\r\n", strerror(errno));
@@ -2554,10 +2589,33 @@ FTP_DECLARE(OPTS) {
 FTP_DECLARE(PASS) {
     console_print(CYAN "%s %s\n" RESET, __func__, args ? args : "");
 
-    /* we accept any password */
     ftp_session_set_state(session, COMMAND_STATE, 0);
 
-    return ftp_send_response(session, 230, "OK\r\n");
+    if (!strcmp(session->username_buf, "anonymous")) {
+        // Just return. Anon is Read-only access and needs no password.
+        return ftp_send_response(session, 230, "OK\r\n");
+    } else {
+        // actual user login. First - sha256 the password.
+        // This is also a binary buffer, not plaintext.
+        Sha256_Data((const unsigned char*)args, strlen(args), (unsigned char*)session->password_buf);
+
+        // Log the login attempt.
+        console_print(RED "login attempt: user:%s ph:", session->username_buf);
+        for(int i=0; i < 64; i++) {
+            char low  = ("0123456789abcdef")[(session->password_buf[i] & 0x0F)];
+            char high = ("0123456789abcdef")[((session->password_buf[i] >> 4) & 0x0F)];
+            console_print("%c%c", high, low);
+        }
+        console_print("\n" RESET);
+
+        // TODO - implement access list
+        session->auth_level = AUTH_READ|AUTH_WRITE; // Read/Write.
+
+        return ftp_send_response(session, 230, "OK\r\n");
+    }
+
+    // We only reach this on failure.
+    return ftp_send_response(session, 430, "Invalid username or password.\r\n");
 }
 
 /*! @fn static int PASV(ftp_session_t *session, const char *args)
@@ -2774,6 +2832,7 @@ FTP_DECLARE(PWD) {
     /* encode the cwd */
     len = strlen(session->cwd);
     path = encode_path(session->cwd, &len, true);
+
     if (path != NULL) {
         i = sprintf(buffer, "257 \"");
         if (i + len + 3 > sizeof(buffer)) {
@@ -2785,6 +2844,7 @@ FTP_DECLARE(PWD) {
             return ftp_send_response(session, 425, "%s\r\n",
                                      strerror(EOVERFLOW));
         }
+        // We don't tell the user where we are in the directory tree.
         memcpy(buffer + i, path, len);
         free(path);
         len += i;
@@ -2894,6 +2954,11 @@ FTP_DECLARE(RMD) {
 
     ftp_session_set_state(session, COMMAND_STATE, 0);
 
+    if ((session->auth_level & AUTH_WRITE) != AUTH_WRITE) {
+        // Invalid. Lacking proper auth.
+        return ftp_send_response(session, 530, "Not permitted.\r\n");
+    }
+
     /* build the path to remove */
     if (build_path(session, session->cwd, args) != 0)
         return ftp_send_response(session, 553, "%s\r\n", strerror(errno));
@@ -2927,6 +2992,11 @@ FTP_DECLARE(RNFR) {
     console_print(CYAN "%s %s\n" RESET, __func__, args ? args : "");
 
     ftp_session_set_state(session, COMMAND_STATE, 0);
+
+    if ((session->auth_level & AUTH_WRITE) != AUTH_WRITE) {
+        // Invalid. Lacking proper auth.
+        return ftp_send_response(session, 530, "Not permitted.\r\n");
+    }
 
     /* build the path to rename from */
     if (build_path(session, session->cwd, args) != 0)
@@ -2962,6 +3032,11 @@ FTP_DECLARE(RNTO) {
     console_print(CYAN "%s %s\n" RESET, __func__, args ? args : "");
 
     ftp_session_set_state(session, COMMAND_STATE, 0);
+
+    if ((session->auth_level & AUTH_WRITE) != AUTH_WRITE) {
+        // Invalid. Lacking proper auth.
+        return ftp_send_response(session, 530, "Not permitted.\r\n");
+    }
 
     /* make sure the previous command was RNFR */
     if (!(session->flags & SESSION_RENAME))
@@ -3130,6 +3205,9 @@ FTP_DECLARE(TYPE) {
 
     ftp_session_set_state(session, COMMAND_STATE, 0);
 
+    /* FIXME - Not the correct way to handle this. The server needs to
+       refuse settings another mode, not silently OK. */
+
     /* we always transfer in binary mode */
     return ftp_send_response(session, 200, "OK\r\n");
 }
@@ -3146,10 +3224,19 @@ FTP_DECLARE(TYPE) {
 FTP_DECLARE(USER) {
     console_print(CYAN "%s %s\n" RESET, __func__, args ? args : "");
 
+    strncpy(session->username_buf, args, 64); // Copy username into buffer.
+
     ftp_session_set_state(session, COMMAND_STATE, 0);
 
-    /* we accept any user name */
-    return ftp_send_response(session, 230, "OK\r\n");
+    if (!strcmp(session->username_buf, "anonymous")) {
+        // Anon is a special user that accepts any password should have only
+        // read permissions.
+        session->auth_level = AUTH_READ|AUTH_WRITE; // Remove AUTH_WRITE once configs are implmented in PASS.
+
+        return ftp_send_response(session, 230, "OK\r\n");
+    }
+
+    return ftp_send_response(session, 331, "OK\r\n");
 }
 
 /*! @fn static int SIZE(ftp_session_t *session, const char *args)
