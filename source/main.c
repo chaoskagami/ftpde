@@ -28,6 +28,8 @@
 loop_status_t loop(loop_status_t (*callback)(void)) {
     loop_status_t status = LOOP_CONTINUE;
 
+    // This is all fine on the 3DS, but eating 100% CPU is unacceptable under linux.
+
 #ifdef _3DS
     /**PNG Graphics (sf2d)**/
     sf2d_set_clear_color(RGBA8(0x40, 0x40, 0x40, 0xFF));
