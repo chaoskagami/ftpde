@@ -11,6 +11,11 @@ This is upstream with FTP-GMX's changes merged in, plus:
  * Better security.
  * Configuration files.
 
+Configuration files
+-------------------
+
+For an example config file, see `extra/ftpde.conf`.
+
 Custom Graphics on 3DS
 ----------------------
 Modify the .png files in the `gfx` folder to add your own graphics. These have no effect when building for a POSIX system, since it's purely a console tool.
@@ -28,8 +33,10 @@ Features
 --------
  * Appears to work well with a variety of clients, including wget, curl, and gftp.
  * Also compiles for most POSIX systems, with additional extensions to allow use in a more serious and secure manner as an actual ftp server for desktop. This has been mostly tested on linux, but even mingw might work.
+ * Supports a configuration backend which allows changing some parameter defaults.
+ * Supports user credentials.
  * Supports multiple simultaneous clients. The 3DS itself only appears to support enough sockets to perform 4-5 simultaneous data transfers, so it will help if you limit your FTP client to this many parallel requests.
- * *Your own* cutting-edge graphics on 3DS. Defaults are non-flashy, but hey, you can get fancy.
+ * Custom graphics on 3DS. Defaults are non-flashy, but hey, you can get fancy.
 
 Reporting issues
 ----------------
@@ -79,6 +86,7 @@ Either `make 3ds` or `make posix` depending on how you plan to use this.
  * ftpde-VER.3dsx - 3dsx relocatable for hbmenu-style loaders.
  * ftpde-VER.smdh - Fancy graphics for hbmenu.
  * ftpde-VER.cia  - Installable CTR file. Zero-keyed/No crypto, so you'll need CFW.
+ * ftpde-VER.3ds  - Encrypted 3DS rom file. No support, I don't own a gateway.
 
 `make posix` will produce the following files:
 
@@ -87,7 +95,7 @@ Either `make 3ds` or `make posix` depending on how you plan to use this.
 How to install
 --------------
 
-For posix, run `make install`. You can optionally set `PREFIX` to specify the install prefix. Default is `/usr/local`.
+For posix, run `make install`. You can optionally set `PREFIX` to specify the install prefix, and SYSCONFDIR to set the configuration path. Default is `PREFIX=/usr/local`. and `SYSCONFDIR=/etc`
 
 For 3DS, you need to copy the files to your 3DS. Alternatively, you can directly install if you're running CFW and have FBI available with: `make HOST=<3ds IP> fbi-install`
 
@@ -125,16 +133,15 @@ Implemented commands
 - XPWD
 - XRMD
 
-New commands in ftpde
----------------------
+New or enhanced commands in ftpde
+---------------------------------
 
-- SIZE (RFC 3659)
+- SIZE - RFC 3659
+- PASS - Proper credential support
+- USER - Proper credential support
 
 In progress
 -----------
-
-- PASS - Partially implemented, needs configuration
-- USER - Partially implemented, needs configuration
 
 Commands that have problems
 ---------------------------
@@ -157,3 +164,8 @@ NYI, but should be implemented
 - LANG
 - LPRT
 - MLSD
+
+Planned Features
+----------------
+
+- IP whitelist support
