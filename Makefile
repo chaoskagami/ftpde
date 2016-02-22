@@ -2,7 +2,8 @@
 
 export VERSION := 2.3
 
-all: linux 3ds
+all:
+	@echo "Run make with one of the following targets: linux, 3ds"
 
 3ds:
 	@$(MAKE) -f 3ds.mk
