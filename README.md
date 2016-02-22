@@ -35,13 +35,13 @@ Features
 Before building
 ---------------
 
-1) Install and set up devkitARM. I recommend being a crazy bastard and building devkitARM yourself, but then again, I run LFS.
+1) Install and set up devkitARM. You also need [makerom](https://github.com/profi200/Project_CTR) and [bannertool](https://github.com/Steveice10/bannertool). There's a bug on linux with makerom - check the issue tracker. Additionally, I don't recommend building with the bundled libyaml and polarssl if you're a security freak. libyaml is easy to unbundle, but polarssl needs some changes. I recommend being a crazy bastard and building everything yourself.
 
 2) Install the latest [ctrulib](https://github.com/smealum/ctrulib/tree/master/libctru). No, devkitPro's will not suffice. You need the development version. Any reports filed with non-dev versions will be completely ignored.
 
 3) Install [sf2dlib](https://github.com/xerpi/sf2dlib)
 
-4) Install portlibs, preferrably from the 'portlibs' subdir of this repo. dkpro's contain known security issues - you want your 3ds to run YOUR code, not be part of a bitcoin mining botnet, right?
+4) Install portlibs, preferrably from the 'portlibs' subdir of this repo. dkpro's contain known security issues - you want your 3ds to run YOUR code, not be part of a bitcoin mining or DDoS botnet, right? Could happen. You can never be too paranoid.
 
 5) Install [sfillib](https://github.com/xerpi/sfillib)
 
@@ -51,13 +51,14 @@ How to build
 ------------
 1) Learn to build other things. No help will be provided if you can't operate a devkit.
 
-2) Run 'make' or 'gmake'.
+2) Either `make 3ds` or `make linux` depending on how you plan to use this.
 
 This will produce the following files:
 
  * ftpde-VER.3dsx - 3dsx relocatable for hbmenu-style loaders.
  * ftpde-VER.smdh - Fancy graphics for hbmenu.
- * ftpde-VER.cia  - Installable CTR file. Zero-keyed/No crypto.
+ * ftpde-VER.cia  - Installable CTR file. Zero-keyed/No crypto, so you'll need CFW.
+ * ftpde          - Linux binary.
 
 Implemented commands
 --------------------
@@ -98,15 +99,24 @@ New commands in ftpde
 
 - SIZE (RFC 3659)
 
+In progress
+-----------
+
+- PASS - Partially implemented, needs configuration
+- USER - Partially implemented, needs configuration
+
+Commands that have problems
+---------------------------
+
+- LIST - Doesn't parse unix command syntax, like -aL. If the ls command is available, we shouldn't be enumerating ourselves.
+
 Stubbed Commands that need proper functionality
 -----------------------------------------------
 
 - ALLO - fallocate please
 - MODE - Only stream is supported. Compressed and block would be nice. 
-- PASS - Unacceptable to be stubbed, need access control.
 - STRU - 
 - TYPE - ASCII mode is needed. Thankfully binary is the one implemented.
-- USER - See PASS.
 
 NYI, but should be implemented
 ------------------------------
@@ -115,6 +125,4 @@ NYI, but should be implemented
 - HOST
 - LANG
 - LPRT
-- MDTM - Last modified time in format "YYYYMMDDhhmmss"
 - MLSD
-- NOOP
