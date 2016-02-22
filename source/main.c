@@ -109,7 +109,7 @@ int main(int argc, char *argv[]) {
     int cfg = load_config_file();
     if (cfg) {
         // Error.
-        printf(RED "Default config file '%s' not found.\n" RESET, config_file);
+        printf(RED "Default config file '%s' not found. Using builtin defaults.\n" RESET, config_file);
     }
 
     char* root_dir = NULL; // Directory to jail to.
@@ -143,6 +143,7 @@ int main(int argc, char *argv[]) {
 				printf(YELLOW "  -p " BLUE "PORT" CYAN "      Run server on port 'PORT'.\n" RESET);
 				printf(YELLOW "  -R " BLUE "ROOT" CYAN "      Root directory for access. Default is `pwd`.\n" RESET);
 				printf(YELLOW "  -r     " CYAN "      Read-only. Disable all uploads.\n" RESET);
+				printf(YELLOW "  -C " BLUE "CFG" CYAN "       Load config file 'CFG'.\n" RESET);
 				printf(YELLOW "  -h     " CYAN "      Print this help.\n" RESET);
 				return 0;
 				break;
