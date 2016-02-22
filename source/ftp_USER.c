@@ -1,4 +1,5 @@
 #include "ftp.h"
+#include "configread.h"
 
 /*! @fn static int USER(ftp_session_t *session, const char *args)
  *
@@ -17,10 +18,12 @@ FTP_DECLARE(USER) {
     ftp_session_set_state(session, COMMAND_STATE, 0);
 
     // TODO - Allow disabling the anonymous user.
-    if (!strcmp(session->username_buf, "anonymous") || !strcmp(session->username_buf, "")) {
+    if (sett_enable_anon && !strcmp(session->username_buf, "anonymous")) {
         // Anon is a special user that accepts any password should have only
         // read permissions. Blank is the same thing as anonymous.
-        session->auth_level = AUTH_READ; // Remove AUTH_WRITE once configs are implmented in PASS.
+        session->auth_level = AUTH_READ;
+
+        console_print(RED "Session logged in as 'anonymous'. Read-only.\n" RESET);
 
         return ftp_send_response(session, 230, "OK\r\n");
     }

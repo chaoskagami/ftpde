@@ -223,7 +223,7 @@ void Sha256_Init(CSha256 *p);
 void Sha256_Update(CSha256 *p, const Byte *data, size_t size);
 void Sha256_Final(CSha256 *p, Byte *digest);
 
-// Calculates the sha256 of data, with length len. buf should be a 64-byte buffer.
+// Calculates the sha256 of data, with length len. buf should be a 32-byte buffer.
 unsigned char *Sha256_Data (const unsigned char *data, unsigned int len, unsigned char *buf);
 
 #endif

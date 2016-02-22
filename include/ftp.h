@@ -214,7 +214,6 @@ struct ftp_session_t {
 
     /*! added in ftpde */
     char username_buf[64];   /*!< Username buffer. Any longer is overkill. */
-    char password_buf[64];   /*!< Password HASH buffer. Not the actual password. Sha256 is used. */
     auth_level_t auth_level; /*!< Auth */
 };
 
