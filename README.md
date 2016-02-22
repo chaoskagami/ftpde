@@ -79,7 +79,7 @@ Make sure you have the dev package for your system, as well as the headers. I'll
 How to build
 ------------
 
-Either `make 3ds` or `make posix` depending on how you plan to use this.
+Either `make 3ds` or `make posix` depending on how you plan to use this. With `make posix`, you may want to set `SYSCONFDIR` if configuration should not be in `/etc`.
 
 `make 3ds` will produce the following files:
 
@@ -95,9 +95,17 @@ Either `make 3ds` or `make posix` depending on how you plan to use this.
 How to install
 --------------
 
-For posix, run `make install`. You can optionally set `PREFIX` to specify the install prefix, and SYSCONFDIR to set the configuration path. Default is `PREFIX=/usr/local`. and `SYSCONFDIR=/etc`
+** 3DS **
 
-For 3DS, you need to copy the files to your 3DS. Alternatively, you can directly install if you're running CFW and have FBI available with: `make HOST=<3ds IP> fbi-install`
+You need to copy the files to your 3DS. Alternatively, you can directly install if you're running CFW and have FBI available with: `make HOST=<3ds IP> fbi-install`
+
+That said, you need a config file at `sd:/ftpde.conf`. Not up for debate, because anonymous has no write permissions. You'll need to set up a proper user, as well, since the default combination is not secure.
+
+** POSIX **
+
+`make install`
+
+You can optionally set `PREFIX` to specify the install prefix, and `SYSCONFDIR` to set the configuration path. Default is `PREFIX=/usr/local`. and `SYSCONFDIR=/etc`
 
 Implemented commands
 --------------------

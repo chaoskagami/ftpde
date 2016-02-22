@@ -13,8 +13,6 @@
 
 #ifdef _3DS
   #define SYSCONFDIR ""
-#else
-  #define SYSCONFDIR "/etc"
 #endif
 
 char* config_file = SYSCONFDIR "/ftpde.conf";

@@ -1,15 +1,15 @@
 CFILES  := $(wildcard source/*.c)
 OFILES  := $(patsubst source/%,build.posix/%,$(CFILES:.c=.o))
 
-CFLAGS  := -g -Wall -Iinclude -U_3DS -DSTATUS_STRING="\"ftpde $(VERSION)\""
+PREFIX   ?= /usr/local
+BINDIR   ?= $(PREFIX)/bin
+SYSCONFDIR ?= /etc
+
+CFLAGS  := -g -Wall -Iinclude -U_3DS -DSTATUS_STRING="\"ftpde $(VERSION)\"" -DSYSCONFDIR="\"$(SYSCONFDIR)\""
 LDFLAGS :=
 LIBS    := -lconfig
 
-PREFIX   ?= /usr/local
-BINDIR   ?= $(PREFIX)/bin
-SBINDIR  ?= $(PREFIX)/sbin
-
-INSTALL := install -m755 -v
+INSTALL := install -v
 
 OUTPUT  := ftpde
 
@@ -30,6 +30,7 @@ clean:
 	$(RM) -r build.posix/ $(OUTPUT)
 
 install: $(OUTPUT)
-	$(INSTALL) -d $(PREFIX)
-	$(INSTALL) -d $(BINDIR)
-	$(INSTALL) $(OUTPUT) $(BINDIR)/$(OUTPUT)
+	[ ! -f $(SYSCONFDIR)/ftpde.conf ] && $(INSTALL) -m644 extra/ftpde.conf $(SYSCONFDIR)/ftpde.conf
+	$(INSTALL) -m755 -d $(PREFIX)
+	$(INSTALL) -m755 -d $(BINDIR)
+	$(INSTALL) -m755 $(OUTPUT) $(BINDIR)/$(OUTPUT)
