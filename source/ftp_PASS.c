@@ -20,16 +20,19 @@ FTP_DECLARE(PASS) {
     } else {
         // actual user login. First - sha256 the password.
         // This is also a binary buffer, not plaintext.
+        // TODO - Salt the password before hashing it.
         Sha256_Data((const unsigned char*)args, strlen(args), (unsigned char*)session->password_buf);
 
-        // Log the login attempt.
-        console_print(RED "login attempt: user:%s ph:", session->username_buf);
-        for(int i=0; i < 64; i++) {
-            char low  = ("0123456789abcdef")[(session->password_buf[i] & 0x0F)];
-            char high = ("0123456789abcdef")[((session->password_buf[i] >> 4) & 0x0F)];
-            console_print("%c%c", high, low);
+        char password[65];
+        password[64] = 0;
+        // This is a hexdumping algorithm. I use it all the time.
+        for(int i=0; i < 32; i++) {
+            password[(i*2)]   = ("0123456789abcdef")[(session->password_buf[i] & 0x0F)];
+            password[(i*2)+1] = ("0123456789abcdef")[((session->password_buf[i] >> 4) & 0x0F)];
         }
-        console_print("\n" RESET);
+
+        // Log the login attempt.
+        console_print(RED "LOGIN: USER:%s PASS_SHA256:%s\n" RESET, session->username_buf, password);
 
         // TODO - implement access list
         session->auth_level = AUTH_READ|AUTH_WRITE; // Read/Write.

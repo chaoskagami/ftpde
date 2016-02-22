@@ -9,56 +9,87 @@ This is upstream with FTP-GMX's changes merged in, plus:
  * Extra commands not yet in ftpd and FTP-GMX.
  * Better root handling on linux - now it doesn't serve `/`.
  * Better security.
+ * Configuration files.
 
-In terms of methodology, I find a few bits unacceptable. These will be fixed.
-
-Custom Graphics
----------------
-Modify the .png files in the `gfx`folder to add your own graphics. These have no effect when building for linux, since it's purely a console tool on linux.
+Custom Graphics on 3DS
+----------------------
+Modify the .png files in the `gfx` folder to add your own graphics. These have no effect when building for a POSIX system, since it's purely a console tool.
 
 **app_banner:** 
-This image will appear on the top screen before you run the application (.3ds and .cia)
+This image will appear on the top screen when the application is highlighted (.cia)
 
 **app_bottom:** 
-This is the static in-app image on the bottom screen
+This is the static in-app image on the bottom screen.
 
 **app_icon:** 
-This is the icon for the .cia, .3ds, and .3dsx
+This is the icon for the .cia and .3dsx.
 
 Features
 --------
-- Appears to work well with a variety of clients, including wget, curl, and gftp.
-- Also compiles for most POSIX systems, with additional extensions to allow use in a more serious and secure manner as an actual ftp server for desktop. This has been mostly tested on linux, but even mingw might work.
-- Supports multiple simultaneous clients. The 3DS itself only appears to support enough sockets to perform 4-5 simultaneous data transfers, so it will help if you limit your FTP client to this many parallel requests.
-- *Your own* cutting-edge graphics on 3DS. Defaults are non-flashy, but hey, you can get fancy.
+ * Appears to work well with a variety of clients, including wget, curl, and gftp.
+ * Also compiles for most POSIX systems, with additional extensions to allow use in a more serious and secure manner as an actual ftp server for desktop. This has been mostly tested on linux, but even mingw might work.
+ * Supports multiple simultaneous clients. The 3DS itself only appears to support enough sockets to perform 4-5 simultaneous data transfers, so it will help if you limit your FTP client to this many parallel requests.
+ * *Your own* cutting-edge graphics on 3DS. Defaults are non-flashy, but hey, you can get fancy.
+
+Reporting issues
+----------------
+
+ * Please check if an issue is reported here. Also check mtheall/ftpd and FTP-GMX first. Don't dupe.
+
+ * If you file an issue which is a feature request I will either consider it, or close it immediately and tell you why.
 
 Before building
 ---------------
 
-1) Install and set up devkitARM. You also need [makerom](https://github.com/profi200/Project_CTR) and [bannertool](https://github.com/Steveice10/bannertool). There's a bug on linux with makerom - check the issue tracker. Additionally, I don't recommend building with the bundled libyaml and polarssl if you're a security freak. libyaml is easy to unbundle, but polarssl needs some changes. I recommend being a crazy bastard and building everything yourself.
+** For 3DS **
 
-2) Install the latest [ctrulib](https://github.com/smealum/ctrulib/tree/master/libctru). No, devkitPro's will not suffice. You need the development version. Any reports filed with non-dev versions will be completely ignored.
+Install and set up devkitARM.
 
-3) Install [sf2dlib](https://github.com/xerpi/sf2dlib)
+You also need the following host tools:
 
-4) Install portlibs, preferrably from the 'portlibs' subdir of this repo. dkpro's contain known security issues - you want your 3ds to run YOUR code, not be part of a bitcoin mining or DDoS botnet, right? Could happen. You can never be too paranoid.
+ * [makerom](https://github.com/profi200/Project_CTR)
 
-5) Install [sfillib](https://github.com/xerpi/sfillib)
+ * [bannertool](https://github.com/Steveice10/bannertool)
 
-6) Precompiled portlibs? No. Go home, you're drunk.
+There's a bug on linux with makerom - check the issue tracker.
+
+Additionally, I don't recommend building with the bundled libyaml and polarssl if you're a security freak. libyaml is easy to unbundle, but polarssl needs some changes. I recommend being a crazy bastard and building everything yourself.
+
+You'll need the following target libs:
+
+ * Git version of [ctrulib](https://github.com/smealum/ctrulib/tree/master/libctru).
+
+ * [sf2dlib](https://github.com/xerpi/sf2dlib)
+
+ * portlibs, preferrably from the `portlibs` subdir of this repo. dkpro's contain known security issues. You need at minimum zlib, libpng, and libconfig.
+
+ * [sfillib](https://github.com/xerpi/sfillib)
+
+** For POSIX systems **
+
+Make sure you have the dev package for your system, as well as the headers. I'll not provide specific instructions, since I assume enough technical competency to figure this out. You need at minimum a functional gcc, libpng, zlib, and libconfig.
 
 How to build
 ------------
-1) Learn to build other things. No help will be provided if you can't operate a devkit.
 
-2) Either `make 3ds` or `make posix` depending on how you plan to use this.
+Either `make 3ds` or `make posix` depending on how you plan to use this.
 
-This will produce the following files:
+`make 3ds` will produce the following files:
 
  * ftpde-VER.3dsx - 3dsx relocatable for hbmenu-style loaders.
  * ftpde-VER.smdh - Fancy graphics for hbmenu.
  * ftpde-VER.cia  - Installable CTR file. Zero-keyed/No crypto, so you'll need CFW.
+
+`make posix` will produce the following files:
+
  * ftpde          - Binary for current platform.
+
+How to install
+--------------
+
+For posix, run `make install`. You can optionally set `PREFIX` to specify the install prefix. Default is `/usr/local`.
+
+For 3DS, you need to copy the files to your 3DS. Alternatively, you can directly install if you're running CFW and have FBI available with: `make HOST=<3ds IP> fbi-install`
 
 Implemented commands
 --------------------
@@ -113,15 +144,15 @@ Commands that have problems
 Stubbed Commands that need proper functionality
 -----------------------------------------------
 
-- ALLO - fallocate please
+- ALLO - Should run fallocate if available.
 - MODE - Only stream is supported. Compressed and block would be nice. 
 - STRU - 
 - TYPE - ASCII mode is needed. Thankfully binary is the one implemented.
+- STOU
 
 NYI, but should be implemented
 ------------------------------
 
-- STOU
 - HOST
 - LANG
 - LPRT
