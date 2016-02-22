@@ -1278,7 +1278,7 @@ int ftp_init(int port, char* root_d, int readonly) {
 
 /* print server address */
 #ifdef _3DS
-    console_set_status("\n" GREEN STATUS_STRING " " YELLOW "IP:" CYAN
+    console_set_status("\n" GREEN STATUS_STRING " " YELLOW "Host:" CYAN
                        "%s " YELLOW "Port:" CYAN "%u" RESET,
                        inet_ntoa(serv_addr.sin_addr),
                        ntohs(serv_addr.sin_port));
@@ -1302,7 +1302,7 @@ int ftp_init(int port, char* root_d, int readonly) {
             return -1;
         }
 
-        console_set_status(GREEN STATUS_STRING " " YELLOW "IP:" CYAN
+        console_set_status(GREEN STATUS_STRING " " YELLOW "Host:" CYAN
                                                "%s " YELLOW "Port:" CYAN
                                                "%u" RESET,
                            hostname, ntohs(serv_addr.sin_port));
