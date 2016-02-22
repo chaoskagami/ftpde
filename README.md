@@ -28,7 +28,7 @@ This is the icon for the .cia, .3ds, and .3dsx
 Features
 --------
 - Appears to work well with a variety of clients, including wget, curl, and gftp.
-- Also compiles for Linux, with additional extensions to allow use in a more serious and secure manner as an actual ftp server for desktop.
+- Also compiles for most POSIX systems, with additional extensions to allow use in a more serious and secure manner as an actual ftp server for desktop. This has been mostly tested on linux, but even mingw might work.
 - Supports multiple simultaneous clients. The 3DS itself only appears to support enough sockets to perform 4-5 simultaneous data transfers, so it will help if you limit your FTP client to this many parallel requests.
 - *Your own* cutting-edge graphics on 3DS. Defaults are non-flashy, but hey, you can get fancy.
 
@@ -51,14 +51,14 @@ How to build
 ------------
 1) Learn to build other things. No help will be provided if you can't operate a devkit.
 
-2) Either `make 3ds` or `make linux` depending on how you plan to use this.
+2) Either `make 3ds` or `make posix` depending on how you plan to use this.
 
 This will produce the following files:
 
  * ftpde-VER.3dsx - 3dsx relocatable for hbmenu-style loaders.
  * ftpde-VER.smdh - Fancy graphics for hbmenu.
  * ftpde-VER.cia  - Installable CTR file. Zero-keyed/No crypto, so you'll need CFW.
- * ftpde          - Linux binary.
+ * ftpde          - Binary for current platform.
 
 Implemented commands
 --------------------

@@ -36,6 +36,7 @@ APP_TITLE       := ftpde $(VERSION)
 APP_DESCRIPTION := ftpd + ftp-gmx + hax $(VERSION)
 APP_AUTHOR      := mtheall/Vorpal Blade/chaoskagami
 ICON            := app_icon.png
+HOST            ?= 192.168.1.2
 
 #---------------------------------------------------------------------------------
 # options for code generation
@@ -188,3 +189,6 @@ $(OUTPUT).3ds    :     $(OUTPUT)_3ds.elf
 #---------------------------------------------------------------------------------------
 endif
 #---------------------------------------------------------------------------------------
+
+install: $(OUTPUT).cia
+	python extra/FalconPunch.py $(OUTPUT).cia $(HOST)
