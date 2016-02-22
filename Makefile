@@ -1,6 +1,6 @@
 .PHONY: all clean posix
 
-export VERSION := 2.3
+export VERSION := 1.0
 
 all:
 	@echo "Run make with one of the following platforms: posix, 3ds"
