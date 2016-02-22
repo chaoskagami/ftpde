@@ -1,3 +1,4 @@
+#!/usr/bin/env python2
 import os, socket, sys, struct
 
 statinfo = os.stat(sys.argv[1])
