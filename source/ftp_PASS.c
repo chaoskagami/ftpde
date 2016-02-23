@@ -11,7 +11,7 @@
  *  @returns error
  */
 FTP_DECLARE(PASS) {
-    console_print(CYAN "%s %s\n" RESET, __func__, args ? args : "");
+    console_print(CYAN "%s ****\n" RESET, __func__); // Deliberately censored. Passwords do NOT get printed to consoles.
 
     ftp_session_set_state(session, COMMAND_STATE, 0);
 
@@ -22,7 +22,7 @@ FTP_DECLARE(PASS) {
         // Username and password are valid.
 
         // Log the succeeded login attempt.
-        console_print(RED "Session logged in as: '%s'\n" RESET, session->username_buf);
+        console_print(RED "Session opened as '%s'\n" RESET, session->username_buf);
 
         // TODO - implement permissions.
         session->auth_level = AUTH_READ|AUTH_WRITE; // Read/Write.
