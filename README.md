@@ -1,15 +1,16 @@
 ftpde
 =======
 
-ftpd is originally created by mtheall, and forked as FTP-GMX by another user to add graphical mods and cia builds.
+ftpd was originally created by mtheall. A fork - FTP-GMX - was created which added CIA builds and customizable graphics, though it stagnated and also broke native builds.
 
-This is upstream with FTP-GMX's changes merged in, plus:
+This is upstream ftpde with FTP-GMX's (working) changes merged in, plus:
 
  * Option handling from terminals. Run `ftpde -h` for more info.
  * Extra commands not yet in ftpd and FTP-GMX.
- * Better root handling on linux - now it doesn't serve `/`.
- * Better security.
- * Configuration files.
+ * Better root prefix handling.
+ * Better security, including user/pass and proper write rejection.
+ * Configurable behavior.
+ * Color on, color off!
 
 Configuration files
 -------------------
@@ -140,6 +141,8 @@ Implemented commands
 - XMKD
 - XPWD
 - XRMD
+- SITE
+  - HELP
 
 New or enhanced commands in ftpde
 ---------------------------------
@@ -154,17 +157,17 @@ In progress
 Commands that have problems
 ---------------------------
 
-- LIST - Needs proper user support, or at very least to specify proper relative permissions. Can actually do `ls params FILE` on a PC. This is only relevant on PC.
-- SITE - Okay, this is maybe debatable, but SITE CHMOD 755 file is useful for linux.
+- LIST - Needs proper user support, or at very least to specify proper relative permissions. Can actually do `ls params FILE` on posix. This is only relevant on posix.
 
 Stubbed Commands that need proper functionality
 -----------------------------------------------
 
 - ALLO - Should run fallocate if available.
-- MODE - Only stream is supported. Compressed and block would be nice. 
+- MODE - Only stream is supported. I'd like to implement the 'Z' extension mode to save bandwidth.
 - STRU - 
 - TYPE - ASCII mode is needed. Thankfully binary is the one implemented.
 - STOU
+- SITE CHMOD - Should function as chmod(1) on a system which supports it. Currently 200 stub.
 
 NYI, but should be implemented
 ------------------------------
@@ -178,7 +181,6 @@ Planned Features
 ----------------
 
 - IP whitelist support (high priority)
-- Runtime color disable (high priority)
 - Automatic reloading of changed config file at runtime (useful)
 - Rate limiting (possibly)
 - Load app_bottom at runtime rather than bin2o'd.

@@ -112,6 +112,7 @@ FTP_DECLARE(STRU);
 FTP_DECLARE(SYST);
 FTP_DECLARE(TYPE);
 FTP_DECLARE(USER);
+FTP_DECLARE(SITE); // Possibly AUTH_WRITE, depending on args
 FTP_DECLARE(SIZE);
 
 /*! session state */

@@ -55,8 +55,6 @@ int check_login_info(char* username, char* password) {
 
     int len = config_setting_length(setting);
 
-    console_print("number of entries: %d\n", len);
-
     for(int i = 0; i < len; i++) {
         config_setting_t* elem = config_setting_get_elem(setting, i);
 
@@ -88,8 +86,6 @@ int check_login_info(char* username, char* password) {
             }
         }
 
-        console_print("username:'%s', alg:'%s', salt:'%s', hash: '%s'\n", user, pass_alg, pass_salt, pass_hash);
-
         int s_pass_len = (strlen(pass_salt)/2) + strlen(password);
 
         // We have all the data needed to process whether our credentials match, so now...
@@ -109,8 +105,6 @@ int check_login_info(char* username, char* password) {
             Sha256_Data((const unsigned char*)salted_buf, s_pass_len, (unsigned char*)hash_bin);
 
             hexdump(hash_bin, hash_out, 32);
-
-            console_print("pass: '%s'\n", hash_out);
 
             if (!strncmp(hash_out, pass_hash, 64)) // Pass is correct for user. Permit login.
                 success = 1;
