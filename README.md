@@ -180,7 +180,9 @@ NYI, but should be implemented
 Planned Features
 ----------------
 
+- Load config file to memory rather than re-read from disk, SIGUSR1 to reload or configuration option to watch it.
 - IP whitelist support (high priority)
-- Automatic reloading of changed config file at runtime (useful)
 - Rate limiting (possibly)
 - Load app_bottom at runtime rather than bin2o'd.
+- Random credentials - only one session is allowed to be open, and credentials are generated on start, and regenerated after close. So that a 3ds can be used *mostly* securely in public places.
+- Disable overwriting ftpde.conf and app_bottom.png via config option. This is insecure. (high prio)

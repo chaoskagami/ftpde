@@ -25,7 +25,8 @@ int sett_disable_color       = 0;
 int sett_paranoid_port       = 0;
 
 #ifdef _3DS
-  int sett_high_clock_rate = 0;
+  int   sett_high_clock_rate = 0;
+  char* sett_app_bottom_path = NULL;
 #endif
 
 int sett_poll_rate = -1;
@@ -160,6 +161,13 @@ int load_config_file() {
     config_lookup_bool(&config_obj, "paranoid_port", &sett_paranoid_port);
 
 #ifdef _3DS
+    // User specified PNG image. Blank string will result in NULL.
+    config_lookup_string(&config_obj, "app_bottom_path", &sett_app_bottom_path);
+    if (sett_app_bottom_path != NULL && strlen(sett_app_bottom_path) != 0) // Not NULL, we need to strdup.
+        sett_app_bottom_path = strdup(sett_app_bottom_path); // We'll need to free this later.
+    else // Not set.
+        sett_app_bottom_path = NULL;
+
     // Enable n3DS clock rate.
     config_lookup_bool(&config_obj, "high_clock_rate", &sett_high_clock_rate);
 #endif

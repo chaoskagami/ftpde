@@ -11,7 +11,8 @@ extern int sett_disable_color;
 extern int sett_paranoid_port;
 
 #ifdef _3DS
-  extern int sett_high_clock_rate;
+  extern int   sett_high_clock_rate;
+  extern char* sett_app_bottom_path;
 #endif
 
 int check_login_info(char* username, char* password);

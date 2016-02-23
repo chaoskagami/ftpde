@@ -36,8 +36,20 @@ loop_status_t loop(loop_status_t (*callback)(void)) {
 #ifdef _3DS
     /**PNG Graphics (sf2d)**/
     sf2d_set_clear_color(RGBA8(0x40, 0x40, 0x40, 0xFF));
-    sf2d_texture *app_bottom =
-        sfil_load_PNG_buffer(app_bottom_png, SF2D_PLACE_RAM);
+
+    sf2d_texture *app_bottom = NULL;
+    if (sett_app_bottom_path == NULL) {
+        // Image was not specified on SD, so use the builtin default.
+        app_bottom = sfil_load_PNG_buffer(app_bottom_png, SF2D_PLACE_RAM);
+    } else {
+        // Load image from SD.
+        app_bottom = sfil_load_PNG_file(sett_app_bottom_path, SF2D_PLACE_RAM);
+        if (app_bottom == NULL) {
+            // Load failed, so load default and log it.
+            console_print(RED "Loading PNG from SD failed. Using default.\n" RESET);
+            app_bottom = sfil_load_PNG_buffer(app_bottom_png, SF2D_PLACE_RAM);
+        }
+    }
 
     while (aptMainLoop()) {
         hidScanInput();
