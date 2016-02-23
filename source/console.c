@@ -6,6 +6,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "configread.h"
+
 #ifdef _3DS
 #include <3ds.h>
 
@@ -36,13 +38,51 @@ void console_set_status(const char *fmt, ...) {
 
     consoleSelect(&status_console);
     va_start(ap, fmt);
-    vprintf(fmt, ap);
+
+    // Check if color is disabled, if disabled, strip colors.
+    char * fmt_o = fmt;
+    if (sett_disable_color) {
+        fmt_o = strip_colors(fmt_o);
+    }
+
+    vprintf(fmt_o, ap);
+
 #ifdef ENABLE_LOGGING
     vfprintf(stderr, fmt, ap);
 #endif
+
+    if (sett_disable_color) {
+        free(fmt_o);
+    }
+
     va_end(ap);
     consoleSelect(&main_console);
 }
+
+#else
+
+/* this is a lot easier when you have a real console */
+void console_set_status(const char *fmt, ...) {
+    va_list ap;
+    va_start(ap, fmt);
+
+    // Check if color is disabled, if disabled, strip colors.
+    char * fmt_o = fmt;
+    if (sett_disable_color) {
+        fmt_o = strip_colors(fmt_o);
+    }
+
+    vprintf(fmt_o, ap);
+
+    if (sett_disable_color) {
+        free(fmt_o);
+    }
+
+    va_end(ap);
+    fputc('\n', stdout);
+}
+
+#endif
 
 /*! add text to the console
  *
@@ -53,12 +93,27 @@ void console_print(const char *fmt, ...) {
     va_list ap;
 
     va_start(ap, fmt);
-    vprintf(fmt, ap);
+
+    // Check if color is disabled, if disabled, strip colors.
+    char * fmt_o = fmt;
+    if (sett_disable_color) {
+        fmt_o = strip_colors(fmt_o);
+    }
+
+    vprintf(fmt_o, ap);
+
 #ifdef ENABLE_LOGGING
-    vfprintf(stderr, fmt, ap);
+    vfprintf(stderr, fmt_o, ap);
 #endif
+
+    if (sett_disable_color) {
+        free(fmt_o);
+    }
+
     va_end(ap);
 }
+
+#ifdef _3DS
 
 /*! print tcp tables */
 static void print_tcp_table(void) {
@@ -132,17 +187,6 @@ void console_render(void) {
     gfxFlushBuffers();
     gspWaitForVBlank();
     gfxSwapBuffers();
-}
-#else
-
-/* this is a lot easier when you have a real console */
-
-void console_set_status(const char *fmt, ...) {
-    va_list ap;
-    va_start(ap, fmt);
-    vprintf(fmt, ap);
-    va_end(ap);
-    fputc('\n', stdout);
 }
 
 #endif
