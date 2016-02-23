@@ -22,6 +22,7 @@ int sett_blank_is_anon       = 1;
 int sett_login_to_anon       = 0;
 int sett_enable_ip_whitelist = 0;
 int sett_disable_color       = 0;
+int sett_paranoid_port       = 0;
 
 #ifdef _3DS
   int sett_high_clock_rate = 0;
@@ -154,6 +155,9 @@ int load_config_file() {
 
     // Disable colorized output.
     config_lookup_bool(&config_obj, "disable_color", &sett_disable_color);
+
+    // Disable colorized output.
+    config_lookup_bool(&config_obj, "paranoid_port", &sett_paranoid_port);
 
 #ifdef _3DS
     // Enable n3DS clock rate.

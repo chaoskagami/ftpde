@@ -125,7 +125,6 @@ Implemented commands
 - NOOP
 - OPTS
 - PASV
-- PORT
 - PWD
 - QUIT
 - REST
@@ -150,6 +149,7 @@ New or enhanced commands in ftpde
 - SIZE - RFC 3659
 - PASS - Proper credential support
 - USER - Proper credential support
+- PORT - Now only accepts same-IP connections to prevent a subclass of connection stealing.
 
 In progress
 -----------

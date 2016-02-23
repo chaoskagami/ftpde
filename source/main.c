@@ -98,7 +98,7 @@ int main(int argc, char *argv[]) {
     // Perform CPU limit init.
     aptInit();
     aptOpenSession();
-    APT_SetAppCpuTimeLimit(NULL, 0);
+    APT_SetAppCpuTimeLimit(0);
     aptCloseSession();
 
     sf2d_init();
@@ -199,15 +199,13 @@ exit_fail:
 
 #ifdef _3DS
     console_print("Press B to exit\n");
-#endif
-
     loop(wait_for_b);
 
-#ifdef _3DS
     /* deinitialize 3DS services */
     sf2d_fini();
     gfxExit();
     acExit();
+    aptExit();
 #endif
 
     return 0;

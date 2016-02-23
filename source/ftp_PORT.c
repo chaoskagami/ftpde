@@ -1,4 +1,5 @@
 #include "ftp.h"
+#include "configread.h"
 
 /*! @fn static int PORT(ftp_session_t *session, const char *args)
  *
@@ -83,8 +84,12 @@ FTP_DECLARE(PORT) {
 
     // Security consideration.
     if (port < 1024) { // We should immediately reject low port redirects.
-        free(addrstr);
-        return ftp_send_response(session, 501, "Rejected port %d for security.\r\n", port);
+        if (sett_paranoid_port) {
+            free(addrstr);
+            return ftp_send_response(session, 501, "Rejected port %d for security.\r\n", port);
+        } else {
+            console_print(YELLOW "Warning: PORT specified port < 1024, '%d'\n" RESET, port);
+        }
     }
 
     /* fill in the address port and family */
@@ -100,8 +105,13 @@ FTP_DECLARE(PORT) {
 
     if(addr_cmd.sin_addr.s_addr != addr.sin_addr.s_addr) {
         // Reject non-identical address.
-        free(addrstr);
-        return ftp_send_response(session, 501, "IP does not match command port.\r\n");
+        if (sett_paranoid_port) {
+            free(addrstr);
+            return ftp_send_response(session, 501, "IP does not match command port.\r\n");
+        } else {
+            console_print(YELLOW "Warning: PORT to '%08x' by '%08x'\n" RESET,
+                          addr.sin_addr.s_addr, addr_cmd.sin_addr.s_addr);
+        }
     }
 
     memcpy(&session->peer_addr, &addr, sizeof(addr));
