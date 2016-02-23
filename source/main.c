@@ -94,6 +94,13 @@ int main(int argc, char *argv[]) {
 
 #ifdef _3DS
     /* initialize needed 3DS services */
+
+    // Perform CPU limit init.
+    aptInit();
+    aptOpenSession();
+    APT_SetAppCpuTimeLimit(NULL, 0);
+    aptCloseSession();
+
     sf2d_init();
     acInit();
     gfxInitDefault();
@@ -111,8 +118,20 @@ int main(int argc, char *argv[]) {
     int cfg = load_config_file();
     if (cfg) {
         // Error.
-        printf(RED "Default config file '%s' not found. Using builtin defaults.\n" RESET, config_file);
+        console_print(RED "Default config file '%s' not found. Using builtin defaults.\n" RESET, config_file);
     }
+
+#ifdef _3DS
+    // If user has an n3DS and clock rate option is set, jack up the clock.
+    if (sett_high_clock_rate == 1) {
+        uint8_t sysType = 0;
+        CFGU_GetSystemModel(&sysType);
+        if (sysType == 2 || sysType == 4) { // Only set clock rate on N3DS units.
+            osSetSpeedupEnable(1);
+            console_print(YELLOW "New 3DS clock rate enabled.\n" RESET);
+        }
+    }
+#endif
 
     char* root_dir = NULL; // Directory to jail to.
 	int ro = 0; // Read-only. No sends are allowed.
@@ -120,13 +139,16 @@ int main(int argc, char *argv[]) {
 #ifndef _3DS
     // On a linux system. Extract argv and argc if there.
     int c;
-    while ( (c = getopt(argc, argv, "p:R:rC:h")) != -1) {
+    while ( (c = getopt(argc, argv, "p:R:rC:hn")) != -1) {
         switch(c) {
             case 'p':
                 sscanf(optarg, "%d", &sett_port);
                 break;
             case 'R':
                 root_dir = optarg;
+                break;
+            case 'n':
+                sett_disable_color = 1;
                 break;
 			case 'r':
 				ro = 1;
@@ -135,18 +157,19 @@ int main(int argc, char *argv[]) {
                 config_file = optarg;
                 cfg = load_config_file();
                 if (cfg) {
-                    printf(RED "Specified config file '%s' not found.\n" RESET, optarg);
+                    console_print(RED "Specified config file '%s' not found.\n" RESET, optarg);
                     goto exit_fail;
                 }
                 break;
 			case 'h':
-				printf(GREEN STATUS_STRING RESET "\n");
-				printf(WHITE "Options:\n" RESET);
-				printf(YELLOW "  -p " BLUE "PORT" CYAN "      Run server on port 'PORT'.\n" RESET);
-				printf(YELLOW "  -R " BLUE "ROOT" CYAN "      Root directory for access. Default is `pwd`.\n" RESET);
-				printf(YELLOW "  -r     " CYAN "      Read-only. Disable all uploads.\n" RESET);
-				printf(YELLOW "  -C " BLUE "CFG" CYAN "       Load config file 'CFG'.\n" RESET);
-				printf(YELLOW "  -h     " CYAN "      Print this help.\n" RESET);
+				console_print(GREEN STATUS_STRING RESET "\n");
+				console_print(WHITE "Options:\n" RESET);
+				console_print(YELLOW "  -p " BLUE "PORT" CYAN "      Run server on port 'PORT'.\n" RESET);
+				console_print(YELLOW "  -R " BLUE "ROOT" CYAN "      Root directory for access. Default is `pwd`.\n" RESET);
+				console_print(YELLOW "  -r     " CYAN "      Read-only. Disable all uploads.\n" RESET);
+				console_print(YELLOW "  -C " BLUE "CFG" CYAN "       Load config file 'CFG'.\n" RESET);
+                console_print(YELLOW "  -n     " CYAN "      Disable color output.\n" RESET);
+				console_print(YELLOW "  -h     " CYAN "      Print this help.\n" RESET);
 				return 0;
 				break;
             case '?':
@@ -157,7 +180,7 @@ int main(int argc, char *argv[]) {
 #endif
 
     if (ro == 1) {
-        printf(RED "Running in read-only mode.\n" RESET);
+        console_print(RED "Running in read-only mode.\n" RESET);
     }
 
     while (status == LOOP_RESTART) {

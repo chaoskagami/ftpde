@@ -21,6 +21,13 @@ int sett_enable_anon         = 1;
 int sett_blank_is_anon       = 1;
 int sett_login_to_anon       = 0;
 int sett_enable_ip_whitelist = 0;
+int sett_disable_color       = 0;
+
+#ifdef _3DS
+  int sett_high_clock_rate = 0;
+#endif
+
+int sett_poll_rate = -1;
 
 int check_login_info(char* username, char* password) {
     config_t config_obj;
@@ -150,6 +157,24 @@ int load_config_file() {
 
     // Enable IP whitelist. Only hosts on it will be allowed to connect.
     config_lookup_bool(&config_obj, "enable_ip_whitelist", &sett_enable_ip_whitelist);
+
+    // Disable colorized output.
+    config_lookup_bool(&config_obj, "disable_color", &sett_disable_color);
+
+#ifdef _3DS
+    // Enable n3DS clock rate.
+    config_lookup_bool(&config_obj, "high_clock_rate", &sett_high_clock_rate);
+#endif
+
+    // Poll rate for hosts. Default is platform-specific.
+    config_lookup_int(&config_obj, "poll_rate", &sett_poll_rate);
+    if (sett_poll_rate == -1) {
+#ifdef _3DS
+        sett_poll_rate = 0;
+#else
+        sett_poll_rate = 100;
+#endif
+    }
 
     config_destroy(&config_obj);
 

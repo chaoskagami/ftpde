@@ -1,19 +1,22 @@
 #pragma once
 
+char* replace(const char *src, const char* p_from, const char* p_to);
+char* strip_colors(const char* src);
+
 #ifdef _3DS
-#include <3ds.h>
-void console_init(void);
-
-__attribute__((format(printf, 1, 2))) void console_print(const char *fmt, ...);
-void console_render(void);
-
+  #include <3ds.h>
+  void console_init(void);
+  void console_render(void);
 #else
-#define console_init(args) {}
-#define console_print printf
-#define console_render(args) {}
+  #define console_init(args) {}
+  #define console_render(args) {}
 #endif
 
-__attribute__((format(printf, 1, 2))) void console_set_status(const char *fmt, ...);
+__attribute__((format(printf, 1, 2)))
+    void console_print(const char *fmt, ...);
+
+__attribute__((format(printf, 1, 2)))
+    void console_set_status(const char *fmt, ...);
 
 // These are ansi sequences. They work on linux. Drunkard.
 #define ESC(x) "\x1b[" #x

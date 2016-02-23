@@ -6,6 +6,7 @@
 #define NO_EXTERN_FTP
   #include "ftp.h"
 #undef NO_EXTERN_FTP
+#include "configread.h"
 
 #ifndef _3DS
   int LISTEN_PORT = 21;
@@ -193,7 +194,7 @@ void ftp_closesocket(int fd, bool connected) {
         pollinfo.fd = fd;
         pollinfo.events = POLLIN;
         pollinfo.revents = 0;
-        rc = poll(&pollinfo, 1, 250);
+        rc = poll(&pollinfo, 1, sett_poll_rate * 3);
         if (rc < 0)
             console_print(RED "poll: %d %s\n" RESET, errno, strerror(errno));
     }
@@ -1080,11 +1081,7 @@ ftp_session_t *ftp_session_poll(ftp_session_t *session) {
     }
 
     /* poll the selected sockets */
-#ifdef _3DS
-    rc = poll(pollinfo, nfds, 0);   // Waiting is pointless on 3DS, single task system and all that.
-#else
-    rc = poll(pollinfo, nfds, 100); // 100ms for CPU usage safety.
-#endif
+    rc = poll(pollinfo, nfds, sett_poll_rate);   // Waiting is pointless on 3DS, single task system and all that.
     if (rc < 0) {
         console_print(RED "poll: %d %s\n" RESET, errno, strerror(errno));
         ftp_session_close_cmd(session);
@@ -1380,12 +1377,7 @@ loop_status_t ftp_loop(void) {
     pollinfo.revents = 0;
 
     /* poll for a new client */
-#ifdef _3DS
-    rc = poll(&pollinfo, 1, 0);
-#else
-    // TODO - Make the poll delay an exposed ftpde.conf property.
-    rc = poll(&pollinfo, 1, 100); // Timeout should *NOT* be 0. EVER. 1/10s is a safe poll, and fixes the 100% CPU issue.
-#endif
+    rc = poll(&pollinfo, 1, sett_poll_rate);
     if (rc < 0) {
         /* wifi got disabled */
         if (errno == ENETDOWN)
