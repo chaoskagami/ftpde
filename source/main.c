@@ -15,9 +15,12 @@
 
 #ifndef _3DS
 #include "getopt.h"
+#include <signal.h>
 #endif
 
 #include "configread.h"
+
+int sigint_force_exit = 0; // DO NOT WRITE FROM MAIN THREAD.
 
 /*! looping mechanism
  *
@@ -56,18 +59,23 @@ loop_status_t loop(loop_status_t (*callback)(void)) {
 
     return LOOP_EXIT;
 #else
-    while (status == LOOP_CONTINUE)
+    while (status == LOOP_CONTINUE) {
         status = callback();
+
+        if(sigint_force_exit == 1) {
+            status = LOOP_EXIT; // Break out.
+        }
+    }
     return status;
 #endif
 }
 
+#ifdef _3DS
 /*! wait until the B button is pressed (on 3DS)
  *
  *  @returns loop status
  */
 static loop_status_t wait_for_b(void) {
-#ifdef _3DS
     /* update button state */
     hidScanInput();
 
@@ -77,9 +85,13 @@ static loop_status_t wait_for_b(void) {
 
     /* B was not pressed */
     return LOOP_CONTINUE;
-#else
-    return LOOP_EXIT;
+}
 #endif
+
+// Sockets leak without proper cleanup. We need to do this on Linux.
+void sigint_handler(int sig) {
+	console_print(YELLOW "SIGINT recieved. Cleaning up and exiting.\n" RESET);
+    sigint_force_exit = 1;
 }
 
 /*! entry point
@@ -106,6 +118,10 @@ int main(int argc, char *argv[]) {
     gfxInitDefault();
     gfxSet3D(false);
     sdmcWriteSafe(false);
+#endif
+
+#ifndef _3DS
+    signal(SIGINT, sigint_handler); // Register cleanup-on-ctrl-c
 #endif
 
     /* initialize console subsystem */
@@ -210,3 +226,4 @@ exit_fail:
 
     return 0;
 }
+
