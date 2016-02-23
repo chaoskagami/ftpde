@@ -196,7 +196,7 @@ void ftp_closesocket(int fd, bool connected) {
         pollinfo.fd = fd;
         pollinfo.events = POLLIN;
         pollinfo.revents = 0;
-        rc = poll(&pollinfo, 1, sett_poll_rate * 3);
+        rc = poll(&pollinfo, 1, sett_poll_rate_two); // Poll rate two is calculated from the normal one.
         if (rc < 0)
             console_print(RED "poll: %d %s\n" RESET, errno, strerror(errno));
     }

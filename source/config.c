@@ -30,6 +30,7 @@ int sett_paranoid_port       = 0;
 #endif
 
 int sett_poll_rate = -1;
+int sett_poll_rate_two = -1
 
 int check_login_info(char* username, char* password) {
     config_t config_obj;
@@ -174,11 +175,14 @@ int load_config_file() {
 
     // Poll rate for hosts. Default is platform-specific.
     config_lookup_int(&config_obj, "poll_rate", &sett_poll_rate);
+    sett_poll_rate_two = ((sett_poll_rate > 83) ? 3 * sett_poll_rate : 250);
     if (sett_poll_rate == -1) {
 #ifdef _3DS
         sett_poll_rate = 0;
+        sett_poll_rate_two = 250;
 #else
         sett_poll_rate = 100;
+        sett_poll_rate_two = 250;
 #endif
     }
 
