@@ -23,5 +23,5 @@ clean:
 
 release: 3ds posix
 	mkdir $(VERSION)-release
-	cp ftpde ftpde-$(VERSION).3dsx ftpde-$(VERSION).3ds ftpde-$(VERSION).cia ftpde-$(VERSION).smdh extra/ftpde.conf $(VERSION)-release
+	cp ftpde ftpde-$(VERSION).3dsx ftpde-$(VERSION).3ds ftpde-$(VERSION).cia ftpde-$(VERSION).smdh extra/ftpde.conf extra/app_bottom.png README.md $(VERSION)-release
 	zip -r9 $(VERSION)-release.zip $(VERSION)-release

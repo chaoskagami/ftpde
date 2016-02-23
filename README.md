@@ -19,15 +19,26 @@ For an example config file, see `extra/ftpde.conf`.
 
 Custom Graphics on 3DS
 ----------------------
+
+You have two choices, depending on your control freak level. One requires building from source code.
+
+Graphics (Simple)
+-----------------
+
+The only file which can be replaced at runtime is 'app_bottom.png'. See extra/ftpde.conf for info.
+
+Graphics (Hacker method)
+-----------------------------------------------
+
 Modify the .png files in the `gfx` folder to add your own graphics. These have no effect when building for a POSIX system, since it's purely a console tool.
 
-**app_banner:** 
+** app_banner ** 
 This image will appear on the top screen when the application is highlighted (.cia)
 
-**app_bottom:** 
-This is the static in-app image on the bottom screen.
+** app_bottom ** 
+This is the builtin static in-app image on the bottom screen.
 
-**app_icon:** 
+** app_icon ** 
 This is the icon for the .cia and .3dsx.
 
 Features
