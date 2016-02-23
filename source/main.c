@@ -20,7 +20,9 @@
 
 #include "configread.h"
 
+#ifndef _3DS
 int sigint_force_exit = 0; // DO NOT WRITE FROM MAIN THREAD.
+#endif
 
 /*! looping mechanism
  *
@@ -48,6 +50,8 @@ loop_status_t loop(loop_status_t (*callback)(void)) {
             // Load failed, so load default and log it.
             console_print(RED "Loading PNG from SD failed. Using default.\n" RESET);
             app_bottom = sfil_load_PNG_buffer(app_bottom_png, SF2D_PLACE_RAM);
+        } else {
+            console_print(GREEN "Loaded user image '%s'.\n" RESET, sett_app_bottom_path);
         }
     }
 
@@ -147,6 +151,8 @@ int main(int argc, char *argv[]) {
     if (cfg) {
         // Error.
         console_print(RED "Default config file '%s' not found. Using builtin defaults.\n" RESET, config_file);
+    } else {
+        console_print(RED "Default config file '%s' was loaded.\n" RESET, config_file);
     }
 
 #ifdef _3DS
@@ -157,6 +163,8 @@ int main(int argc, char *argv[]) {
         if (sysType == 2 || sysType == 4) { // Only set clock rate on N3DS units.
             osSetSpeedupEnable(1);
             console_print(YELLOW "New 3DS clock rate enabled.\n" RESET);
+        } else {
+            console_print(RED "System type wrong, not setting clock rate despite config.\n" RESET);
         }
     }
 #endif
