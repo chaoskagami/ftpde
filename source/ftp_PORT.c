@@ -12,7 +12,7 @@
 FTP_DECLARE(PORT) {
     char *addrstr, *p, *portstr;
     int commas = 0, rc;
-    short port = 0;
+    unsigned short port = 0; // Ports are uint16_t.
     unsigned long val;
     struct sockaddr_in addr;
 
@@ -77,14 +77,32 @@ FTP_DECLARE(PORT) {
         free(addrstr);
         return ftp_send_response(session, 501, "%s\r\n", strerror(EINVAL));
     }
+
     port <<= 8;
     port += val;
+
+    // Security consideration.
+    if (port < 1024) { // We should immediately reject low port redirects.
+        free(addrstr);
+        return ftp_send_response(session, 501, "Rejected port %d for security.\r\n", port);
+    }
 
     /* fill in the address port and family */
     addr.sin_family = AF_INET;
     addr.sin_port = htons(port);
 
     free(addrstr);
+
+    // Another security check - the IP should be the same as cmd.
+    struct sockaddr_in addr_cmd;
+    socklen_t addrlen_cmd = sizeof(addr_cmd);
+    getpeername(session->cmd_fd, (struct sockaddr *)&addr_cmd, &addrlen_cmd);
+
+    if(addr_cmd.sin_addr.s_addr != addr.sin_addr.s_addr) {
+        // Reject non-identical address.
+        free(addrstr);
+        return ftp_send_response(session, 501, "IP does not match command port.\r\n");
+    }
 
     memcpy(&session->peer_addr, &addr, sizeof(addr));
 
