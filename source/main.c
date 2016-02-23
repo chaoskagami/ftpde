@@ -104,11 +104,13 @@ static loop_status_t wait_for_b(void) {
 }
 #endif
 
+#ifndef _3DS
 // Sockets leak without proper cleanup. We need to do this on Linux.
 void sigint_handler(int sig) {
 	console_print(YELLOW "SIGINT recieved. Cleaning up and exiting.\n" RESET);
     sigint_force_exit = 1;
 }
+#endif
 
 /*! entry point
  *
@@ -152,7 +154,7 @@ int main(int argc, char *argv[]) {
         // Error.
         console_print(RED "Default config file '%s' not found. Using builtin defaults.\n" RESET, config_file);
     } else {
-        console_print(RED "Default config file '%s' was loaded.\n" RESET, config_file);
+        console_print(GREEN "Default config file '%s' was loaded.\n" RESET, config_file);
     }
 
 #ifdef _3DS
@@ -162,9 +164,9 @@ int main(int argc, char *argv[]) {
         CFGU_GetSystemModel(&sysType);
         if (sysType == 2 || sysType == 4) { // Only set clock rate on N3DS units.
             osSetSpeedupEnable(1);
-            console_print(YELLOW "New 3DS clock rate enabled.\n" RESET);
+            console_print(GREEN "New 3DS clock rate enabled.\n" RESET);
         } else {
-            console_print(RED "System type wrong, not setting clock rate despite config.\n" RESET);
+            console_print(YELLOW "System type '%hhu' wrong, not setting clock rate.\n" RESET, sysType);
         }
     }
 #endif
