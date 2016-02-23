@@ -3,16 +3,20 @@
 FTP_DECLARE(ST_HELP) {
     console_print(CYAN " -> %s %s\n" RESET, __func__, args ? args : "");
 
+    ftp_session_set_state(session, COMMAND_STATE, 0);
+
     /* list our accepted commands */
     return ftp_send_response(session, -214,
                              "The following SITE commands are recognized\r\n"
                              " HELP CHMOD\r\n"
-                             "Server is running " STATUS_STRING "\r\n"
+                             " Server is running " STATUS_STRING "\r\n"
                              "214 End\r\n");
 }
 
 FTP_DECLARE(ST_CHMOD) {
     console_print(CYAN " -> %s %s\n" RESET, __func__, args ? args : "");
+
+    ftp_session_set_state(session, COMMAND_STATE, 0);
 
 #ifndef _3DS
     /* We only do this stuff on POSIX builds, since the SD card of a 3DS
@@ -21,8 +25,6 @@ FTP_DECLARE(ST_CHMOD) {
 
     return ftp_send_response(session, 200, "OK\r\n");
 }
-
-#define MIN(x, y) ()
 
 /*! @fn static int SITE(ftp_session_t *session, const char *args)
  *
@@ -37,8 +39,6 @@ FTP_DECLARE(SITE) {
     char* args_new = NULL;
 
     console_print(CYAN "%s %s" RESET, __func__, args ? args : "");
-
-    ftp_session_set_state(session, COMMAND_STATE, 0);
 
     // This is a site-specific command.
     if (args && strlen(args) > 0) {
@@ -58,6 +58,8 @@ FTP_DECLARE(SITE) {
 
     console_print("\n");
 
-    return ftp_send_response(session, 504, "Invalid site command.\r\n");
+    ftp_session_set_state(session, COMMAND_STATE, 0);
+
+    return ftp_send_response(session, 502, "Invalid site command.\r\n");
 }
 

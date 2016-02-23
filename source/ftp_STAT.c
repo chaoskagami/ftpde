@@ -27,23 +27,33 @@ FTP_DECLARE(STAT) {
         /* we are waiting to connect to the client */
         return ftp_send_response(session, -211,
                                  "FTP server status\r\n"
-                                 " Waiting for data connection\r\n"
-                                 "211 End\r\n");
+                                 " Running: " STATUS_STRING "\r\n"
+                                 " Logged in as: '%s'\r\n"
+                                 " TYPE: Binary, MODE: Stream\r\n"
+                                 " No data connection\r\n"
+                                 "211 End\r\n",
+                                 session->username_buf);
     } else if (session->state == DATA_TRANSFER_STATE) {
         /* we are in the middle of a transfer */
         return ftp_send_response(session, -211,
                                  "FTP server status\r\n"
+                                 " Running: " STATUS_STRING "\r\n"
+                                 " Logged in as: '%s'\r\n"
+                                 " TYPE: Binary, MODE: Stream\r\n"
                                  " Transferred %" PRIu64 " bytes\r\n"
                                  "211 End\r\n",
-                                 session->filepos);
+                                 session->username_buf, session->filepos);
     }
 
     if (strlen(args) == 0) {
         /* no argument provided, send the server status */
         return ftp_send_response(session, -211, "FTP server status\r\n"
+                                                " Running: " STATUS_STRING "\r\n"
+                                                " Logged in as: '%s'\r\n"
+                                                " TYPE: Binary, MODE: Stream\r\n"
                                                 " Uptime: %02d:%02d:%02d\r\n"
                                                 "211 End\r\n",
-                                 hours, minutes, seconds);
+                                 session->username_buf, hours, minutes, seconds);
     }
 
     /* argument provided, open the path in STAT mode */
