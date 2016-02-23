@@ -136,6 +136,8 @@ int main(int argc, char *argv[]) {
     gfxInitDefault();
     gfxSet3D(false);
     sdmcWriteSafe(false);
+
+    cfguInit();
 #endif
 
 #ifndef _3DS
@@ -158,13 +160,16 @@ int main(int argc, char *argv[]) {
     }
 
 #ifdef _3DS
+    int high_clock_enabled = 0;
+
     // If user has an n3DS and clock rate option is set, jack up the clock.
     if (sett_high_clock_rate == 1) {
         uint8_t sysType = 0;
         CFGU_GetSystemModel(&sysType);
         if (sysType == 2 || sysType == 4) { // Only set clock rate on N3DS units.
+            high_clock_enabled = 1;
             osSetSpeedupEnable(1);
-            console_print(GREEN "New 3DS clock rate enabled.\n" RESET);
+            console_print(GREEN "New3DS clock rate enabled.\n" RESET);
         } else {
             console_print(YELLOW "System type '%hhu' wrong, not setting clock rate.\n" RESET, sysType);
         }
@@ -239,7 +244,13 @@ exit_fail:
     console_print("Press B to exit\n");
     loop(wait_for_b);
 
+    // reset clock rate
+    if (high_clock_enabled)
+        osSetSpeedupEnable(0);
+
     /* deinitialize 3DS services */
+    cfguExit();
+
     sf2d_fini();
     gfxExit();
     acExit();
