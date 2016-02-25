@@ -21,6 +21,38 @@ FTP_DECLARE(ST_CHMOD) {
 #ifndef _3DS
     /* We only do this stuff on POSIX builds, since the SD card of a 3DS
      * has no concept of permissions. */
+
+    char* mode_str = args;
+    char* filename = NULL;
+    for (int i=0; i < strlen(args)-1; i++) {
+        if (args[i] == ' ') {
+            filename = args + i + 1;
+        }
+    }
+    uint32_t mode;
+
+    // Now, scan the mode into a string and remove any problematic bits (e.g. suid).
+    sscanf(mode_str, "%u", &mode);
+    // By far the simplest way...
+    mode = mode % 1000;
+
+    REJECT_WRITE_CHK;
+
+    // Now test if said file exists. It should. We use build_path here.
+
+    /* build the file path */
+    if (build_path(session, session->cwd, filename) != 0)
+        return ftp_send_response(session, 553, "%s\r\n", strerror(errno));
+
+    /* return an error immediately if this is a config file. */
+    if (check_is_config(session->buffer, 1)) {
+        console_print(RED "Config '%s' chmod rejected by policy.\n" RESET, session->buffer);
+        return ftp_send_response(session, 550, "chmod was rejected by policy\r\n");
+    }
+
+    // Now session->buffer is a filename to chmod - do so.
+    if (chmod(session->buffer, mode) == -1)
+        return ftp_send_response(session, 553, "%s\r\n", strerror(errno));
 #endif
 
     return ftp_send_response(session, 200, "OK\r\n");

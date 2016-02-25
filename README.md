@@ -157,10 +157,10 @@ Implemented commands
 New or enhanced commands in ftpde
 ---------------------------------
 
-- SIZE - RFC 3659
+- SIZE - RFC 3659. Unbreaks wget progress, yay.
 - PASS - Proper credential support
 - USER - Proper credential support
-- PORT - Now only accepts same-IP connections to prevent a subclass of connection stealing.
+- PORT - Can be configured to only accept same-IP connections to prevent a subclass of connection stealing.
 
 In progress
 -----------
@@ -194,6 +194,6 @@ Planned Features
 - Load config file to memory rather than re-read from disk, SIGUSR1 to reload or configuration option to watch it.
 - IP whitelist support (high priority)
 - Rate limiting (possibly)
-- Load app_bottom at runtime rather than bin2o'd.
 - Random credentials - only one session is allowed to be open, and credentials are generated on start, and regenerated after close. So that a 3ds can be used *mostly* securely in public places.
-- Disable overwriting ftpde.conf and app_bottom.png via config option. This is insecure. (high prio)
+- Disable overwriting ftpde.conf and app_bottom.png via config option. This is insecure. (Partially implemented for configs)
+- Rather than waste time rejecting excessive invalid attempts to connect, add the ability to ignore known bad clients. (maybe)
