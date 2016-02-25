@@ -71,12 +71,24 @@ void console_set_status(const char *fmt, ...) {
     if (sett_disable_color) {
         fmt_o = strip_colors(fmt_o);
     }
+#ifndef _3DS
+    else if (!isatty(fileno(stdout))) {
+        // stdout is redirected, so strip color codes anyways.
+        fmt_o = strip_colors(fmt_o);
+    }
+#endif
 
     vprintf(fmt_o, ap);
 
     if (sett_disable_color) {
         free(fmt_o);
     }
+#ifndef _3DS
+    else if (!isatty(fileno(stdout))) {
+        // stdout is redirected, so strip color codes anyways.
+        free(fmt_o);
+    }
+#endif
 
     va_end(ap);
     fputc('\n', stdout);
@@ -99,6 +111,12 @@ void console_print(const char *fmt, ...) {
     if (sett_disable_color) {
         fmt_o = strip_colors(fmt_o);
     }
+#ifndef _3DS
+    else if (!isatty(fileno(stdout))) {
+        // stdout is redirected, so strip color codes anyways.
+        fmt_o = strip_colors(fmt_o);
+    }
+#endif
 
     vprintf(fmt_o, ap);
 
@@ -109,6 +127,12 @@ void console_print(const char *fmt, ...) {
     if (sett_disable_color) {
         free(fmt_o);
     }
+#ifndef _3DS
+    else if (!isatty(fileno(stdout))) {
+        // stdout is redirected, so strip color codes anyways.
+        free(fmt_o);
+    }
+#endif
 
     va_end(ap);
 }

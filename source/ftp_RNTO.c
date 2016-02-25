@@ -34,6 +34,12 @@ FTP_DECLARE(RNTO) {
     if (build_path(session, session->cwd, args) != 0)
         return ftp_send_response(session, 554, "%s\r\n", strerror(errno));
 
+    /* return an error immediately if this is a config file. */
+    if (check_is_config(session->buffer, 1)) {
+        console_print(RED "Config '%s' rename rejected by policy.\n" RESET, session->buffer);
+        return ftp_send_response(session, 550, "rename was rejected by policy\r\n");
+    }
+
     /* rename the file */
     rc = rename(session->tmp_buffer, session->buffer);
     if (rc != 0) {

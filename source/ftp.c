@@ -276,6 +276,12 @@ int ftp_session_open_file_read(ftp_session_t *session) {
     int rc;
     struct stat st;
 
+    /* return an error immediately if this is a config file. */
+    if (check_is_config(session->buffer, 0)) {
+        console_print(RED "Config '%s' read rejected by policy.\n" RESET, session->buffer);
+        return -1;
+    }
+
     /* open file in read mode */
     session->fp = fopen(session->buffer, "rb");
     if (session->fp == NULL) {
@@ -351,6 +357,12 @@ int ftp_session_open_file_write(ftp_session_t *session, bool append) {
         mode = "ab";
     else if (session->filepos != 0)
         mode = "r+b";
+
+    /* return an error immediately if this is a config file. */
+    if (check_is_config(session->buffer, 1)) {
+        console_print(RED "Config '%s' overwrite rejected by policy.\n" RESET, session->buffer);
+        return -1;
+    }
 
     /* open file in write mode */
     session->fp = fopen(session->buffer, mode);

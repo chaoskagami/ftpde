@@ -15,23 +15,45 @@
   #define SYSCONFDIR ""
 #endif
 
-char* config_file = SYSCONFDIR "/ftpde.conf";
-int sett_port                = 21;
-int sett_enable_anon         = 1;
-int sett_blank_is_anon       = 1;
-int sett_login_to_anon       = 0;
-int sett_enable_ip_whitelist = 0;
-int sett_disable_color       = 0;
-int sett_paranoid_port       = 0;
+char* default_config_file = SYSCONFDIR "/ftpde.conf";
+char* config_file         = SYSCONFDIR "/ftpde.conf";
+int sett_port                 = 21;
+int sett_enable_anon          = 1;
+int sett_blank_is_anon        = 1;
+int sett_login_to_anon        = 0;
+int sett_enable_ip_whitelist  = 0;
+int sett_disable_color        = 0;
+int sett_paranoid_port        = 0;
+int sett_disable_config_write = 1;
+int sett_disable_config_read  = 1;
+int sett_poll_rate = -1;
+int sett_poll_rate_two = -1;
+int sett_read_only = 0;
 
 #ifdef _3DS
   int   sett_high_clock_rate = 0;
   char* sett_app_bottom_path = NULL;
 #endif
 
-int sett_poll_rate = -1;
-int sett_poll_rate_two = -1;
+/* Checks whether the pathname is a config file,
+ * returning 1 if it is, and 0 if not.
+ *
+ * If sett_disable_config_write is 0, this will always
+ * return 0.
+ */
+int check_is_config(char* path, int write) {
+    if (write && !sett_disable_config_write)
+        return 0; // Allow config overwrite.
+    else if (!write && !sett_disable_config_read)
+        return 0; // Allow config read.
 
+    if (!strcmp(default_config_file, path)) return 1; // Default config file?
+    if (!strcmp(config_file, path)) return 1; // Console parameter config file?
+
+    return 0; // Not a config.
+}
+
+// Checks whether login is valid.
 int check_login_info(char* username, char* password) {
     config_t config_obj;
 	config_setting_t *setting;
@@ -158,8 +180,14 @@ int load_config_file() {
     // Disable colorized output.
     config_lookup_bool(&config_obj, "disable_color", &sett_disable_color);
 
-    // Disable colorized output.
+    // PORT command rejects certain exploitable combinations of behavior.
     config_lookup_bool(&config_obj, "paranoid_port", &sett_paranoid_port);
+
+    // Overwriting configs is disallowed.
+    config_lookup_bool(&config_obj, "disable_config_write", &sett_disable_config_write);
+
+    // Overwriting configs is disallowed.
+    config_lookup_bool(&config_obj, "disable_config_read", &sett_disable_config_read);
 
 #ifdef _3DS
     // User specified PNG image. Blank string will result in NULL.

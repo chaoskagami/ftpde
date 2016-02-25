@@ -150,14 +150,80 @@ int main(int argc, char *argv[]) {
     console_set_status("\n" GREEN STATUS_STRING RESET);
 #endif
 
-    // Load config.
-    int cfg = load_config_file();
-    if (cfg) {
-        // Error.
-        console_print(RED "Default config file '%s' not found. Using builtin defaults.\n" RESET, config_file);
-    } else {
-        console_print(GREEN "Default config file '%s' was loaded.\n" RESET, config_file);
+    char* root_dir = NULL; // Directory to jail to.
+    int con_port = -1;
+    int con_read_only = 0;
+    int con_disable_color = 0;
+    int con_config_file = 0;
+
+#ifndef _3DS
+    // On a linux system. Extract argv and argc if there.
+    int c;
+    char unres_config[PATH_MAX];
+    ssize_t len_unres_config = 0;
+    while ( (c = getopt(argc, argv, "p:R:rC:hn")) != -1) {
+        switch(c) {
+            case 'p':
+                sscanf(optarg, "%d", &con_port);
+                break;
+            case 'R':
+                root_dir = optarg;
+                break;
+            case 'n':
+                con_disable_color = 1;
+                break;
+			case 'r':
+				con_read_only = 1;
+				break;
+            case 'C':
+                memset(unres_config, 0, PATH_MAX);
+                if (realpath(optarg, unres_config) == NULL) {
+                    console_print(RED "Specified config file '%s' not found.\n" RESET, optarg);
+                    goto exit_fail;
+                }
+                con_config_file = 1;
+                break;
+			case 'h':
+				console_print(GREEN STATUS_STRING RESET "\n");
+				console_print(WHITE "Options:\n" RESET);
+				console_print(YELLOW "  -p " BLUE "PORT" CYAN "      Run server on port 'PORT'.\n" RESET);
+				console_print(YELLOW "  -R " BLUE "ROOT" CYAN "      Root directory for access. Default is `pwd`.\n" RESET);
+				console_print(YELLOW "  -r     " CYAN "      Read-only. Disable all uploads.\n" RESET);
+				console_print(YELLOW "  -C " BLUE "CFG" CYAN "       Load config file 'CFG'.\n" RESET);
+                console_print(YELLOW "  -n     " CYAN "      Disable color output.\n" RESET);
+				console_print(YELLOW "  -h     " CYAN "      Print this help.\n" RESET);
+				return 0;
+				break;
+            case '?':
+            default:
+                break;
+        }
     }
+
+    if (con_config_file)
+        config_file = unres_config; // Full path to config.
+
+#endif
+
+    if (con_disable_color)
+        sett_disable_color = 1; // We enable this early.
+
+    int cfg = load_config_file();
+    if (cfg && con_config_file) {
+        console_print(RED "Specified config file '%s' not found.\n" RESET, config_file);
+        goto exit_fail;
+    } else if (cfg) {
+        console_print(YELLOW "Default config file '%s' not found. Loading defaults.\n" RESET, default_config_file);
+    } else {
+        console_print(GREEN "Config file '%s' loaded.\n" RESET, config_file);
+    }
+
+    if (con_port != -1)
+        sett_port = con_port;
+    if (con_read_only)
+        sett_read_only = 1;
+    if (con_disable_color)
+        sett_disable_color = 1;
 
 #ifdef _3DS
     int high_clock_enabled = 0;
@@ -176,59 +242,13 @@ int main(int argc, char *argv[]) {
     }
 #endif
 
-    char* root_dir = NULL; // Directory to jail to.
-	int ro = 0; // Read-only. No sends are allowed.
-
-#ifndef _3DS
-    // On a linux system. Extract argv and argc if there.
-    int c;
-    while ( (c = getopt(argc, argv, "p:R:rC:hn")) != -1) {
-        switch(c) {
-            case 'p':
-                sscanf(optarg, "%d", &sett_port);
-                break;
-            case 'R':
-                root_dir = optarg;
-                break;
-            case 'n':
-                sett_disable_color = 1;
-                break;
-			case 'r':
-				ro = 1;
-				break;
-            case 'C':
-                config_file = optarg;
-                cfg = load_config_file();
-                if (cfg) {
-                    console_print(RED "Specified config file '%s' not found.\n" RESET, optarg);
-                    goto exit_fail;
-                }
-                break;
-			case 'h':
-				console_print(GREEN STATUS_STRING RESET "\n");
-				console_print(WHITE "Options:\n" RESET);
-				console_print(YELLOW "  -p " BLUE "PORT" CYAN "      Run server on port 'PORT'.\n" RESET);
-				console_print(YELLOW "  -R " BLUE "ROOT" CYAN "      Root directory for access. Default is `pwd`.\n" RESET);
-				console_print(YELLOW "  -r     " CYAN "      Read-only. Disable all uploads.\n" RESET);
-				console_print(YELLOW "  -C " BLUE "CFG" CYAN "       Load config file 'CFG'.\n" RESET);
-                console_print(YELLOW "  -n     " CYAN "      Disable color output.\n" RESET);
-				console_print(YELLOW "  -h     " CYAN "      Print this help.\n" RESET);
-				return 0;
-				break;
-            case '?':
-            default:
-                break;
-        }
-    }
-#endif
-
-    if (ro == 1) {
+    if (con_read_only) {
         console_print(RED "Running in read-only mode.\n" RESET);
     }
 
     while (status == LOOP_RESTART) {
         /* initialize ftp subsystem */
-        if (ftp_init(sett_port, root_dir, ro) == 0) {
+        if (ftp_init(sett_port, root_dir, con_read_only) == 0) {
             /* ftp loop */
             status = loop(ftp_loop);
 
