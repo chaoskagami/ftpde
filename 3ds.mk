@@ -31,6 +31,7 @@ BUILD    := build
 SOURCES  := source
 DATA     := gfx
 INCLUDES := include
+ROMFS    :=
 
 APP_TITLE       := ftpde $(VERSION)
 APP_DESCRIPTION := ftpd + ftp-gmx + hax $(VERSION)
@@ -41,9 +42,10 @@ HOST            ?= 192.168.1.2
 #---------------------------------------------------------------------------------
 # options for code generation
 #---------------------------------------------------------------------------------
-ARCH     := -march=armv6k -mtune=mpcore -mfloat-abi=hard
+ARCH     := -march=armv6k -mtune=mpcore -mfloat-abi=hard -mtp=soft
 
 CFLAGS   := -g -Wall -O3 -mword-relocations \
+             -fomit-frame-pointer -ffunction-sections \
             $(ARCH) \
             -DSTATUS_STRING="\"ftpde $(VERSION)\""
 

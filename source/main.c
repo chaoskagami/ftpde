@@ -127,9 +127,7 @@ int main(int argc, char *argv[]) {
 
     // Perform CPU limit init.
     aptInit();
-    aptOpenSession();
     APT_SetAppCpuTimeLimit(0);
-    aptCloseSession();
 
     sf2d_init();
     acInit();
