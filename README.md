@@ -3,7 +3,7 @@ ftpde
 
 ftpd was originally created by mtheall. A fork - FTP-GMX - was created which added CIA builds and customizable graphics, though it stagnated and also broke native builds.
 
-This is upstream ftpde with FTP-GMX's (working) changes merged in, plus:
+This is upstream ftpd (for the most part) with FTP-GMX's (working) changes merged in, plus:
 
  * Option handling from terminals. Run `ftpde -h` for more info.
  * Extra commands not yet in ftpd and FTP-GMX.
